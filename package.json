@@ -1,38 +1,57 @@
 {
   "name": "my-app-second",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "webpack.config.js",
+  "scripts": {
+    "start": "copy .env.loc .env && webpack-dev-server --mode development --open --hot",
+    "build:local": "copy .env.loc .env && webpack --mode production",
+    "build:dev": "cp ./.env.dev ./.env && webpack --mode production",
+    "build:stg": "cp ./.env.stg ./.env && webpack --mode production",
+    "build:prd": "cp ./.env.prd ./.env && webpack --mode production"
+  },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
+    "@babel/polyfill": "^7.10.1",
+    "@babel/runtime": "^7.16.3",
+    "@loadable/component": "^5.15.0",
+    "@nivo/core": "^0.73.0",
+    "@nivo/pie": "^0.73.0",
+    "ag-grid-community": "^25.1.0",
+    "ag-grid-react": "^25.1.0",
+    "antd": "^3.26.13",
+    "axios": "^0.19.0",
+    "dotenv-webpack": "^7.0.3",
+    "exceljs": "^4.3.0",
+    "file-saver": "^2.0.5",
+    "moment": "^2.29.0",
+    "nivo": "^0.31.0",
+    "path-browserify": "^1.0.1",
+    "query-string": "^7.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-scripts": "4.0.3",
-    "web-vitals": "^1.0.1"
+    "react-redux": "^7.1.1",
+    "react-router-dom": "^5.1.1",
+    "redux": "^4.1.2",
+    "screenfull": "^5.0.0",
+    "suneditor": "^2.41.3",
+    "suneditor-react": "^3.3.0",
+    "xlsx": "^0.17.0"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@babel/plugin-transform-runtime": "^7.16.4",
+    "@babel/polyfill": "^7.10.1",
+    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-react": "^7.16.0",
+    "babel-loader": "^8.2.3",
+    "css-loader": "^6.5.1",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.64.1",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.5.0"
   }
 }

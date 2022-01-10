@@ -1,0 +1,24 @@
+.login {
+    background-size: cover;
+}
+
+.login .model{
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.login .model .login-form{
+    padding: 2rem;
+    box-shadow: 0px 2px 13px 0px rgba(228, 228, 228, 0.6);
+    border-radius: 5px;
+    background-color: rgb(236, 233, 233);
+    width: 35rem;
+}
+
+.login .model .login-form .login-form-button {
+    width: 100%;
+}

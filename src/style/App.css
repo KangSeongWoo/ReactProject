@@ -1,0 +1,23 @@
+::-webkit-scrollbar {
+    width: 5px;
+    background-color: #fff;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: #ccc;
+}
+
+.base-style {
+    background-color: #fff;
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 13px 0 rgba(228, 228, 228, 0.6);
+}
+

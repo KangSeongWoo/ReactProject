@@ -1,24 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { HashRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
+import './style/base.css'
+import './style/App.css'
+import './style/common.css'
+import loadable from '@loadable/component'
 
-function App() {
+const LayoutTemplateContainer = loadable(() => import('./containers/template/LayoutTemplateContainer'));
+const LoginContainer = loadable(() => import('./containers/Common/loginContainer'));
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Switch>
+        <Route path='/' exact render={() => <Redirect to='/index' />} />
+        <Route path='/login' component={LoginContainer} />
+        <Route component={LayoutTemplateContainer} />
+      </Switch>
+    </Router>
   );
 }
 

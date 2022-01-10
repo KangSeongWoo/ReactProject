@@ -1,0 +1,291 @@
+body {
+    font-family: NotoSansCJKkr;
+    font-size: 10px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+}
+
+.app {
+    font-size: 12px;
+}
+
+td,
+th {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.ant-table {
+    font-size: 12px;
+}
+
+.notice-wrapper {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.notice-header {
+    width: 100%;
+    font-size: 10px !important;
+}
+
+.ant-breadcrumb {
+    font-size: 11px !important;
+}
+
+.notice-list {
+    width: 100%;
+    background-color: white;
+}
+
+.notice-condition {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    border: 1px solid #dbdbdb;
+    width: 100%;
+    background-color: white;
+}
+
+.notice-content {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    border: 1px solid #dbdbdb;
+    width: 100%;
+    background-color: white;
+}
+
+.notice-condition > table {
+    border: 1px solid #dbdbdb;
+    width: 100%;
+    background-color: white;
+}
+
+.notice-condition > table > tbody > tr > td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border: 1px solid #dbdbdb;
+}
+
+.notice-condition > table > thead > tr > th {
+    border: 1px solid #dbdbdb;
+}
+
+.notice-condition > table > thead > tr > td {
+    border: 1px solid #dbdbdb;
+}
+
+.modal-condition {
+    width: 100%;
+    background-color: white;
+}
+
+.modal-condition > table {
+    border: 1px solid #dbdbdb;
+    width: 100%;
+    background-color: white;
+}
+
+.modal-condition > table > tbody > tr > td {
+    border: 1px solid #dbdbdb;
+}
+
+.button-wrapper {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    text-align: center;
+}
+
+.notice-center-button-left {
+    float: left;
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+.notice-center-button {
+    float: right;
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+
+.margin-top-18 {
+    margin-top: 18px;
+}
+
+.white-color {
+    background-color: white;
+}
+
+.ant-table-body > table {
+    font-size: 12px;
+    background-color: white;
+}
+
+.ant-table-body > table > thead > tr > th {
+    background-color: white;
+}
+
+table > tbody > tr > th {
+    padding-left: 12px;
+}
+
+.ant-table-body > table > tbody > tr > td {
+    background-color: white;
+}
+
+.category_input > .ant-modal > .ant-modal-content > .ant-modal-header {
+    border-bottom: none;
+}
+
+.category_input > .ant-modal > .ant-modal-content > .ant-modal-footer {
+    border-top: none;
+}
+
+.td-center {
+    margin: auto;
+    text-align: center;
+}
+
+.td-center .ant-calendar-picker-input {
+    border-style: none;
+}
+
+.notice-content table tbody tr td {
+}
+
+.optionRow {
+    margin-top: 4px;
+}
+
+.col-r-margin {
+    margin-right: 4px;
+}
+
+td button {
+    margin-right: 4px;
+}
+
+.goodsItemList-margin {
+    margin-top: 4px;
+}
+
+.marginBottom-12 {
+    margin-bottom: 12px;
+}
+
+.marginTop-12 {
+    margin-top: 12px;
+}
+
+.div-table-scroll {
+    width: 800px !important;
+    height: 240px;
+    overflow: auto;
+}
+
+.div-table-scroll {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    border: 1px solid #dbdbdb;
+    background-color: white;
+    overflow: auto;
+}
+
+.div-table-scroll-h240 {
+    height: 240px;
+}
+
+.div-table-scroll-w800 {
+    width: 800px !important;
+}
+
+.div-table-scroll table {
+    border: 1px solid #dbdbdb;
+    background-color: white;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.div-table-scroll table tbody {
+    display: table;
+    width: 100%;
+}
+
+.div-table-scroll table tbody tr td {
+    border: 1px solid #dbdbdb;
+}
+
+.div-table-scroll table thead tr th {
+    border: 1px solid #dbdbdb;
+}
+
+.div-table-scroll table thead tr td {
+    border: 1px solid #dbdbdb;
+}
+
+.div-hr-sc {
+    width: 100%;
+    height: 240px;
+    overflow: auto;
+}
+
+.div-hr-sc table {
+    width: 100%;
+    table-layout: fixed;
+    border: 0px;
+    border-collapse: collapse;
+}
+
+.div-hr-sc th {
+    position: sticky;
+    top: 0px;
+    z-index: 999;
+}
+
+.div-hr-sc table {
+    border: 1px solid #dbdbdb;
+    background-color: white;
+}
+
+.div-hr-sc table tbody tr td {
+    border: 1px solid #dbdbdb;
+}
+
+.div-hr-sc table thead tr th {
+    padding: 8px;
+    background-color: rgb(211, 209, 209);
+    border: 1px solid #dbdbdb;
+    text-align: center;
+}
+
+.ant-table-thead {
+    background-color: rgb(211, 209, 209);
+}
+
+.border-0 {
+    border: 0;
+}
+
+.cs_popup_wrap {
+    font-size: 14px;
+    background-color: rgba(197, 236, 124, 0.8);
+}
