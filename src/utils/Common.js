@@ -1,6 +1,14 @@
 import { notification } from 'antd'
 
-let requestUrls = [];
+export const trim = object => {
+    if (object == undefined || object == null) {
+        return ''
+    } else if (typeof object == 'string') {
+        return object.trim()
+    } else {
+        return object
+    }
+}
 
 //json 합치기
 export const extend = (json1, json2) => {
@@ -31,7 +39,6 @@ export const commonNotification = params => {
         }
     })
 }
-
 
 // CI, PI, PL 출력관련
 // 엑셀에 Value값 입력

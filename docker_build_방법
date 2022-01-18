@@ -7,7 +7,6 @@ docker save admin-web:latest > adminWeb.tar
 
 #파일을 서버로 전송
 
-
 #서버에 있는 기존의 도커컨테이너 스톱 및 이미지 삭제
 docker ps
 
@@ -18,7 +17,12 @@ docker images
 docker rmi 이미지키
 
 #전송된 파일을 도커이미지로 로드
- docker load -i adminWeb.tar
+docker load -i adminWeb.tar
 
 #이미지 로드후 컨테이너 실행
- docker run -it -d --name "admin-web" -p 80:80 admin-web:latest
+docker run -it -d --name "admin-web" -p 443:443 -p 80:80 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
+
+# docker run -it -d --name "admin-web" -p 80:80 -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
+# docker run -it -d --name "admin-web" -p 80:443 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
+# docker run -it -d --name "admin-web" -p 443:443 -p 80:443 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
+# docker run -it -d --name "admin-web" -p 443:443 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest

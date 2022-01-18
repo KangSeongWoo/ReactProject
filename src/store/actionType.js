@@ -4,8 +4,8 @@
  import * as types from './ActionTypes' 를 할 수 있어요.
 */
 
-export const SET_USER_INFO  = 'SET_USER_INFO';
-export const LOGOUT         = 'LOGOUT';
-export const MENU_TOGGLE    = 'MENU_TOGGLE';
-export const SPIN           = "SPIN";
+export const SET_USER_INFO = 'SET_USER_INFO';
+export const LOGOUT = 'LOGOUT';
+export const MENU_TOGGLE = 'MENU_TOGGLE';
+export const SPIN = "SPIN";
 

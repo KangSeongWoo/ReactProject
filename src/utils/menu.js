@@ -10,17 +10,23 @@ export const menu = [
         icon: 'form',
         subs: [
             { title: '상품리스트', key: '/Goods/list', icon: '' },
-            { title: '상품등록', key: '/Goods/add', icon: '' },
-            { title: '재고리스트', key: '/Goods/stockList', icon: '' }
+            { title: '상품등록', key: '/Goods/add', icon: '' }
         ]
+    },
+    {
+        title: '재고관리',
+        key: '/goodsStock',
+        icon: 'form',
+        subs: [{ title: '재고리스트', key: '/Goods/stockList', icon: '' }]
     },
     {
         title: '주문',
         key: '/order',
         icon: 'form',
         subs: [
-            { title: '주문별주문리스트', key: '/order/orderList', icon: '' },
-            { title: '상품별주문리스트', key: '/order/orderList/byProducts', icon: '' }
+            // { title: '주문별주문리스트', key: '/order/orderList', icon: '' },
+            { title: '상품별주문리스트', key: '/order/orderList/byProducts', icon: '' },
+            { title: '주문취소', key: '/order/orderList/forCancel', icon: '' }
         ]
     },
     {

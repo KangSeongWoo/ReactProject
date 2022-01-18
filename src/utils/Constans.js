@@ -1,3 +1,5 @@
+import React from 'react'
+
 export const ORIGINS = [
     { label: '가나', value: 'GH' },
     { label: '가봉', value: 'GA' },
@@ -290,6 +292,10 @@ export const ASSORTSTATE = [
 
 export const SHORTAGEYN = [
     {
+        label: '전체',
+        value: ' '
+    },
+    {
         label: '진행중',
         value: '01'
     },
@@ -338,7 +344,7 @@ export const STORAGEGB = [
 
 export const PURCHASESTATUS = [
     {
-        label: '접수',
+        label: '발주',
         value: '01'
     },
     {
@@ -352,6 +358,18 @@ export const PURCHASESTATUS = [
     {
         label: '취소',
         value: '05'
+    },
+    {
+        label: '송금완료',
+        value: 'A1'
+    },
+    {
+        label: '거래처선금입금',
+        value: 'A2'
+    },
+    {
+        label: '거래처잔금입금',
+        value: 'A3'
     }
 ]
 
@@ -360,6 +378,7 @@ export const TRANSACTIONSTATUS = [
         label: '접수',
         value: '01'
     },
+
     {
         label: '송금완료',
         value: 'A1'
@@ -441,5 +460,16 @@ export const CHANNELGB = [
     {
         label: '고도몰',
         value: '01'
+    }
+]
+
+export const PROCESSSTATUS = [
+    {
+        label: '처리전',
+        value: '01'
+    },
+    {
+        label: '처리완료',
+        value: '02'
     }
 ]

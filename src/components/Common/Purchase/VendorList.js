@@ -1,11 +1,9 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { withRouter } from 'react-router-dom'
-import { Layout, Col, Row, Typography, Button } from 'antd'
+import { Col, Row, Typography, Button } from 'antd'
 import { Input, Modal, Spin } from 'antd'
 import { AgGridReact } from 'ag-grid-react'
-
 import Https from '../../../api/http'
-
 import '../../../style/custom.css'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
@@ -13,12 +11,9 @@ import * as Common from '../../../utils/Common.js'
 
 const { Text } = Typography
 
-
-
 const VendorList = props => {
     const { isModalVisible, setIsModalVisible, backState, setBackState } = props
 
-    const [loading, setLoading] = useState(false)
     const [gridApi, setGridApi] = useState(null)
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [state, setState] = useState({
@@ -26,6 +21,20 @@ const VendorList = props => {
         vendorNm: '',
         rowData: []
     })
+
+    const hotkeyFunction = useCallback(event => {
+        if (event.key == 'F8') {
+            document.querySelector('.searchVendorPop').click()
+        }
+    }, [])
+
+    useEffect(() => {
+        if (isModalVisible) {
+            document.addEventListener('keyup', hotkeyFunction)
+        } else {
+            document.removeEventListener('keyup', hotkeyFunction)
+        }
+    }, [isModalVisible])
 
     const columnDefs = () => {
         return [
@@ -70,15 +79,12 @@ const VendorList = props => {
     }
 
     const getPurchaseVendorSearch = (codeId, codeNm) => {
-        setLoading(true)
-        let params = {}
-        if (codeId != '') {
-            params['codeId'] = codeId
-        }
+        props.setSpin(true)
 
-        if (codeNm != '') {
-            params['codeNm'] = codeNm
-        }
+        let params = {}
+
+        params['codeId'] = Common.trim(codeId)
+        params['codeNm'] = Common.trim(codeNm)
 
         const p = new URLSearchParams(params)
 
@@ -90,7 +96,7 @@ const VendorList = props => {
                     ...state,
                     rowData: response.data.data
                 })
-                setLoading(false)
+                props.setSpin(false)
             })
             .catch(error => {
                 console.error(error)
@@ -103,7 +109,7 @@ const VendorList = props => {
                     ...state,
                     rowData: []
                 })
-                setLoading(false)
+                props.setSpin(false)
             }) // ERROR
     }
 
@@ -119,69 +125,72 @@ const VendorList = props => {
 
         setBackState({
             ...backState,
-            purchaseVendorId: rows[0].codeId,
-            purchaseVendorNm: rows[0].codeNm
+            vendorId: rows[0].codeId,
+            vendorNm: rows[0].codeNm
         })
 
         return rows
     }
 
     return (
-        <Spin spinning={loading} size='large'>
-            <Modal title='구매처 검색' visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-                <Row>
-                    <Col span={16}>
-                        <Row className='onVerticalCenter marginTop-10'>
-                            <Col span={8}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    구매처
-                                </Text>
-                            </Col>
-                            <Col span={16}>
-                                <Input name='vendorId' value={state.vendorId} onChange={handleInputChange} />
-                            </Col>
-                        </Row>
-                        <Row className='onVerticalCenter marginTop-10'>
-                            <Col span={8}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    구매처명
-                                </Text>
-                            </Col>
-                            <Col span={16}>
-                                <Input name='vendorNm' value={state.vendorNm} onChange={handleInputChange} />
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={8}>
-                        <Row type='flex' justify='end' align='middle'>
-                            <Button
-                                className='marginTop-10'
-                                type='primary'
-                                style={{ width: '72px', height: '72px' }}
-                                onClick={() => getPurchaseVendorSearch(state.vendorId, state.vendorNm)}>
-                                조회
-                            </Button>
-                        </Row>
-                    </Col>
-                </Row>
-                <div>
-                    <div className='ag-theme-alpine' style={{ height: 200, width: '100%' }}>
-                        <AgGridReact
-                            className='marginTop-10'
-                            columnDefs={columnDefs()}
-                            rowData={state.rowData}
-                            ensureDomOrder={true}
-                            enableCellTextSelection={true}
-                            onRowClicked={onSearchSelectedValue}
-                            defaultColDef={{ editable: true, flex: 1, minWidth: 100, resizable: true }}
-                            rowSelection={'single'}
-                            onGridReady={onGridReady}></AgGridReact>
-                    </div>
+        <Modal
+            title='구매처 검색'
+            className='vendorList'
+            visible={isModalVisible}
+            onOk={handleOk}
+            onCancel={handleCancel}>
+            <Row>
+                <Col span={16}>
+                    <Row className='onVerticalCenter marginTop-10'>
+                        <Col span={8}>
+                            <Text className='font-15 NanumGothic-Regular' strong>
+                                구매처
+                            </Text>
+                        </Col>
+                        <Col span={16}>
+                            <Input name='vendorId' value={state.vendorId} onChange={handleInputChange} />
+                        </Col>
+                    </Row>
+                    <Row className='onVerticalCenter marginTop-10'>
+                        <Col span={8}>
+                            <Text className='font-15 NanumGothic-Regular' strong>
+                                구매처명
+                            </Text>
+                        </Col>
+                        <Col span={16}>
+                            <Input name='vendorNm' value={state.vendorNm} onChange={handleInputChange} />
+                        </Col>
+                    </Row>
+                </Col>
+                <Col span={8}>
+                    <Row type='flex' justify='end' align='middle'>
+                        <Button
+                            className='marginTop-10 searchVendorPop'
+                            type='primary'
+                            style={{ width: '72px', height: '72px' }}
+                            onClick={() => getPurchaseVendorSearch(state.vendorId, state.vendorNm)}>
+                            조회
+                        </Button>
+                    </Row>
+                </Col>
+            </Row>
+            <div>
+                <div className='ag-theme-alpine' style={{ height: 200, width: '100%' }}>
+                    <AgGridReact
+                        suppressDragLeaveHidesColumns={true}
+                        className='marginTop-10'
+                        columnDefs={columnDefs()}
+                        rowData={state.rowData}
+                        ensureDomOrder={true}
+                        enableCellTextSelection={true}
+                        onRowClicked={onSearchSelectedValue}
+                        defaultColDef={{ editable: false, flex: 1, minWidth: 100, resizable: true }}
+                        rowSelection={'single'}
+                        onGridReady={onGridReady}></AgGridReact>
                 </div>
-            </Modal>
-        </Spin>
+            </div>
+        </Modal>
     )
 }
 
-//export default Create
 export default withRouter(VendorList)
