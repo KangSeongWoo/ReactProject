@@ -4,7 +4,7 @@ import CreateGoodsContainer from '../../containers/Purchase/Item/CreateGoodsCont
 import EditContainer from '../../containers/Purchase/Item/EditContainer'
 import ListContainer from '../../containers/Purchase/List/ListContainer'
 
-import { withRouter } from 'react-router'
+import { withRouter } from 'react-router-dom'
 
 const PurchaseItem = (props) => {
     let { match } = props

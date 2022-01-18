@@ -4,21 +4,23 @@
     scope 이슈와 관계 없이 편의상 사용되었습니다.
 */
 
-import * as types from './actionType';
+import * as types from './actionType'
 
-export const setUserInfo = (userId) => ({
+export const setUserInfo = userId => ({
     type: types.SET_USER_INFO,
     userId
-});
+})
 
 export const logout = () => ({
     type: types.LOGOUT
-});
-
-export const menuToggle = () => ({
-    type: types.MENU_TOGGLE
 })
 
-export const spin = () => ({
-    type: types.SPIN
+export const menuToggleAction = menuToggle => ({
+    type: types.MENU_TOGGLE,
+    menuToggle
+})
+
+export const spin = isSpin => ({
+    type: types.SPIN,
+    isSpin
 })

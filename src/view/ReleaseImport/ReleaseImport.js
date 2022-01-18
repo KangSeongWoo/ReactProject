@@ -6,7 +6,7 @@ import ReleaseProcessListContainer from '../../containers/ReleaseImport/List/Rel
 import ReleaseProcessOneContainer from '../../containers/ReleaseImport/Item/ReleaseProcessOneContainer'
 import ReleaseOrderOneContainer from '../../containers/ReleaseImport/Item/ReleaseOrderOneContainer'
 
-import { withRouter } from 'react-router'
+import { withRouter } from 'react-router-dom'
 
 const ReleaseImport = (props) => {
     let { match, location } = props;

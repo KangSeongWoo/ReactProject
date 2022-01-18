@@ -1,12 +1,12 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Layout, Icon, Menu } from 'antd'
 import { Link, withRouter } from 'react-router-dom'
-import { menu } from '../../utils/menu'
+import Logo from '../../img/logo.png'
 
 const { Sider } = Layout
 
 const AppAside = (props) => {
-    let { menuToggle } = props
+    let { menuToggle, menu } = props
 
     const [state, setState] = useState({
         openKeys: [],
@@ -63,12 +63,12 @@ const AppAside = (props) => {
         <Sider className='aside' collapsed={menuToggle}>
             <div className='logo'>
                 <a rel='noopener noreferrer' href='/' target='_blank'>
-                    <Icon type='github' style={{ fontSize: '3.8rem', color: '#fff' }} />
+                    <img src={Logo} />
                 </a>
             </div>
             <Menu
                 mode='inline'
-                theme='dark'
+                theme='light'
                 defaultOpenKeys={state.openKeys}
                 defaultSelectedKeys={state.selectedKeys}
                 onClick={({ key }) =>
@@ -84,7 +84,6 @@ const AppAside = (props) => {
                         return item.subs && item.subs.length > 0 ? renderSubMenu(item) : renderMenuItem(item)
                     })}
             </Menu>
-            {/* <CustomMenu menu={menu}></CustomMenu> */}
         </Sider>
     )
 }

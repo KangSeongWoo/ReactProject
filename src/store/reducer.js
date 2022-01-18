@@ -22,7 +22,7 @@ const modifyState = (state = initialState, action) => {
                 user: {
                     ...state.user,
                     userId: action.userId
-                } 
+                }
             }
         case types.LOGOUT:
             return {
@@ -35,21 +35,21 @@ const modifyState = (state = initialState, action) => {
         case types.MENU_TOGGLE:
             return {
                 ...state,
-                wbeState: {
-                    ...state.wbeState,
+                webState: {
+                    ...state.webState,
                     menuToggle: !action.menuToggle
                 }
             }
         case types.SPIN:
             return {
                 ...state,
-                wbeState: {
-                    ...state.wbeState,
-                    spin: !action.spin
+                webState: {
+                    ...state.webState,
+                    spin: action.isSpin
                 }
             }
         default:
-            return state;
+            return state
     }
 }
 

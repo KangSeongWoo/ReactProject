@@ -1,29 +1,25 @@
-FROM node:12 as builder
+FROM node:12-alpine as builder
 
-# 노드수정
 # 작업 폴더를 만들고 npm 설치
 WORKDIR /app
+ADD . /app/
 
-#RUN npm i -g npm 
+RUN npm i -g npm 
 
 RUN rm /usr/local/bin/yarn
 RUN rm /usr/local/bin/yarnpkg && npm install -g yarn
 
-#RUN npm install -g yarn
+#npm i -g yarn
 
-#RUN rm yarn.lock
-#RUN rm package-lock.json
-
-COPY package.json /app/package.json
-COPY yarn.lock /app/yarn.lock
-
+RUN rm yarn.lock
+RUN rm package-lock.json
 RUN yarn
-
-COPY . /app
 RUN yarn build:stg
 
+
+
 FROM nginx:1.13.9-alpine
-# nginx의 기본 설정을 삭제하고 앱에서 ㅛㅁ구설정한 파일을 복사
+# nginx의 기본 설정을 삭제하고 앱에서 설정한 파일을 복사
 RUN rm -rf /etc/nginx/conf.d
 COPY conf /etc/nginx
 

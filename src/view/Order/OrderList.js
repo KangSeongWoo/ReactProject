@@ -2,7 +2,8 @@ import React from 'react'
 import ListContainer from '../../containers/Order/OrderList/ListContainer'
 import DetailContainer from '../../containers/Order/OrderList/DetailContainer'
 import ListByProductsContainer from '../../containers/Order/OrderList/ListByProductsContainer'
-import { withRouter } from 'react-router'
+import ListForCancelContainer from '../../containers/Order/OrderList/ListForCancelContainer'
+import { withRouter } from 'react-router-dom'
 
 const OrderList = (props) => {
     let { match } = props
@@ -17,6 +18,8 @@ const OrderList = (props) => {
         viewContainer = <DetailContainer params={params}></DetailContainer>
     } else if (id == 'byProducts') {
         viewContainer = <ListByProductsContainer params={params}></ListByProductsContainer>
+    } else if (id == 'forCancel') {
+        viewContainer = <ListForCancelContainer params={params}></ListForCancelContainer>
     } else {
         viewContainer = <ListContainer></ListContainer>
     }

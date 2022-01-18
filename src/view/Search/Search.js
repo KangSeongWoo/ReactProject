@@ -1,6 +1,6 @@
 import React from 'react'
 import SearchContainer from '../../containers/Search/Item/SearchContainer'
-import { withRouter } from 'react-router'
+import { withRouter } from 'react-router-dom'
 
 const Search = () => {
     var viewContainer = null

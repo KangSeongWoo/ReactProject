@@ -4,7 +4,7 @@ import EditContainer from '../../containers/Goods/Good/EditContainer'
 import ListContainer from '../../containers/Goods/List/ListContainer'
 import StockListContainer from '../../containers/Goods/List/StockListContainer'
 
-import { withRouter } from 'react-router'
+import { withRouter } from 'react-router-dom'
 
 const Good = (props) => {
     let { match } = props

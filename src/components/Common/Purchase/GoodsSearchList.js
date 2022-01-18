@@ -1,28 +1,20 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react'
+import React, { useState, useLayoutEffect, useEffect, useCallback } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Layout } from 'antd'
 import { Input, Row, Col, Modal, Button, Select, Typography } from 'antd'
-import { Spin, Cascader } from 'antd'
-
 import Https from '../../../api/http'
 import { AgGridReact } from 'ag-grid-react'
-import BrandSearch from '../../Common/Brand/Search'
 import * as Common from '../../../utils/Common.js'
-//import PurchaseVendorSearch from '../../Common/Purchase/VendorList'
-
 import '../../../style/custom.css'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
 
-
-
 const { Option } = Select
-const { Title, Text } = Typography
+const { Text } = Typography
 
 const GoodsSearchList = props => {
     const { isModalVisible, setIsModalVisible, backState, setBackState } = props
 
-    const [loading, setLoading] = useState(false)
     const [gridApi, setGridApi] = useState(null)
     const [ownerList, setOwnerList] = useState([])
     const [brandList, setBrandList] = useState([])
@@ -46,59 +38,30 @@ const GoodsSearchList = props => {
     const columnDefs = () => {
         return [
             {
-                headerName: '품목코드',
+                headerName: '상품코드',
                 field: 'assortId',
                 headerCheckboxSelection: true,
                 headerCheckboxSelectionFilteredOnly: true,
                 checkboxSelection: true
             },
-            { headerName: '품목명', field: 'assortNm' },
+            { headerName: '브랜드', field: 'brandNm' },
+            { headerName: '모델번호', field: 'modelNo' },
             {
-                headerName: '진행상태',
-                field: 'shortageYn',
+                field: 'imagePath',
+                headerName: '이미지',
                 cellRenderer: param => {
-                    let statusNm = ''
-                    if (param.value == '01') {
-                        statusNm = '진행중'
-                    } else if (param.value == '02') {
-                        statusNm = '일시중지'
-                    } else if (param.value == '03') {
-                        statusNm = '단종'
-                    } else if (param.value == '04') {
-                        statusNm = '품절'
-                    }
+                    let imgRend = ''
+                    imgRend += '<div style="width:40px; text-align:center"><img style="max-width:100%" src="'
+                    imgRend += param.value
+                    imgRend += '"></div>'
 
-                    return statusNm
+                    return imgRend
                 }
             },
-            { headerName: '상품코드', field: 'itemId' },
-            {
-                headerName: '옵션 진행상태',
-                field: 'itemShortageYn',
-                cellRenderer: param => {
-                    let statusNm = ''
-                    if (param.value == '01') {
-                        statusNm = '진행중'
-                    } else if (param.value == '02') {
-                        statusNm = '일시중지'
-                    } else if (param.value == '03') {
-                        statusNm = '단종'
-                    } else if (param.value == '04') {
-                        statusNm = '품절'
-                    }
-
-                    return statusNm
-                }
-            },
+            { headerName: '상품명', field: 'assortNm' },
             { headerName: '옵션1', field: 'optionNm1' },
             { headerName: '옵션2', field: 'optionNm2' },
-            { headerName: '브랜드', field: 'brandId' },
-            { headerName: '브랜드명', field: 'brandNm' },
-            { headerName: '카테고리', field: 'dispCategoryId' },
-            { headerName: '카테고리명', field: 'categoryNm' },
-            { headerName: '전체카테고리명', field: 'fullCategoryNm' },
-            { headerName: 'RRP', field: 'mdRrp' },
-            { headerName: '공급처할인', field: 'buySupplyDiscount' }
+            { headerName: '옵션3', field: 'optionNm3' }
         ]
     }
 
@@ -107,13 +70,19 @@ const GoodsSearchList = props => {
         setInit()
     }, [])
 
-    useEffect(() => {
-        getBrandSearch()
-    }, [ownerList])
+    const hotkeyFunction = useCallback(event => {
+        if (event.key == 'F8') {
+            document.querySelector('.searchPop').click()
+        }
+    }, [])
 
     useEffect(() => {
-        setCate()
-    }, [brandList])
+        if (isModalVisible) {
+            document.addEventListener('keyup', hotkeyFunction)
+        } else {
+            document.removeEventListener('keyup', hotkeyFunction)
+        }
+    }, [isModalVisible])
 
     // 초기화
     const setCate = async () => {
@@ -127,23 +96,55 @@ const GoodsSearchList = props => {
         } catch (error) {
             console.error(error)
         } finally {
-            setLoading(false)
+            props.setSpin(false)
         }
     }
 
     // 구매처 가져오기
     const setInit = async () => {
         try {
-            setLoading(true)
+            props.setSpin(true)
 
             let res = await Https.getVendorList()
-            console.log('---------------------------------------------------')
-            console.log(res)
+
             setOwnerList(res.data.data.PurchaseVendors) // 구매처 State
         } catch (error) {
             console.error(error)
         } finally {
+            getBrandSearch()
         }
+    }
+
+    const getBrandSearch = () => {
+        props.setSpin(true)
+        let params = {}
+
+        const p = new URLSearchParams(params)
+
+        return Https.getBrandSearchList(p)
+            .then(response => {
+                console.log(response)
+
+                setBrandList(response.data.data)
+
+                props.setSpin(false)
+            })
+            .catch(error => {
+                console.error(error)
+                Common.commonNotification({
+                    kind: 'error',
+                    message: '에러 발생',
+                    description: '잠시후 다시 시도해 주세요'
+                })
+                setState({
+                    ...state,
+                    rowData: []
+                })
+                props.setSpin(false)
+            })
+            .finally(() => {
+                setCate()
+            })
     }
 
     // 브랜드 팝업 보기
@@ -179,33 +180,26 @@ const GoodsSearchList = props => {
     }
 
     const getSearch = () => {
-        setLoading(true)
         const { vendorId, brandId, assortId, assortNm, categoryValue } = state
 
         let params = {}
 
-        if (vendorId != '') {
-            params['vendorId'] = vendorId
-        }
+        params['vendorId'] = Common.trim(vendorId)
+        params['assortId'] = Common.trim(assortId)
+        params['assortNm'] = Common.trim(assortNm)
+        params['categoryValue'] = Common.trim(categoryValue)
 
         if (brandId != '') {
-            params['brandId'] = brandId
-        }
-
-        if (assortId != '') {
-            params['assortId'] = assortId
-        }
-        if (assortNm != '') {
-            params['assortNm'] = assortNm
-        }
-
-        if (categoryValue != '') {
-            params['categoryValue'] = categoryValue
+            params['brandId'] = Common.trim(brandId)
+        } else {
+            alert('브랜드를 선택해 주세요.')
+            return false
         }
 
         const p = new URLSearchParams(params)
 
-        return Https.goodsItemFullCategory(p)
+        props.setSpin(true)
+        return Https.getGoodsDetailList(p)
             .then(response => {
                 console.log(response)
 
@@ -213,7 +207,7 @@ const GoodsSearchList = props => {
                     ...state,
                     rowData: response.data.data
                 })
-                setLoading(false)
+                props.setSpin(false)
             })
             .catch(error => {
                 console.error(error)
@@ -226,7 +220,7 @@ const GoodsSearchList = props => {
                     ...state,
                     rowData: []
                 })
-                setLoading(false)
+                props.setSpin(false)
             })
     }
 
@@ -297,40 +291,34 @@ const GoodsSearchList = props => {
         })
     }
 
-    const getBrandSearch = () => {
-        setLoading(true)
-        let params = {}
+    const handleSelectChange = e => {
+        setState({
+            ...state,
+            brandId: e
+        })
+    }
 
-        const p = new URLSearchParams(params)
-
-        return Https.getBrandSearchList(p)
-            .then(response => {
-                console.log(response)
-
-                setBrandList(response.data.data)
-
-                setLoading(false)
-            })
-            .catch(error => {
-                console.error(error)
-                Common.commonNotification({
-                    kind: 'error',
-                    message: '에러 발생',
-                    description: '잠시후 다시 시도해 주세요'
-                })
-                setState({
-                    ...state,
-                    rowData: []
-                })
-                setLoading(false)
-            }) // ERROR
+    // 이미지 Cell 클릭시
+    const onCellClicked = e => {
+        if (e.colDef.field != 'imagePath') {
+            return false
+        }
+        let data = e.data.listImageData
+        window
+            .open(
+                data,
+                '이미지 미리보기' + new Date(),
+                'toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=no,width=710,height=1502,top=, left= '
+            )
+            .focus()
     }
 
     return (
         <Layout>
             <Modal
                 title='상품검색'
-                width='800px'
+                width='1500px'
+                className='goodsSearchList'
                 visible={isModalVisible}
                 onOk={handleOk}
                 onCancel={handleCancel}
@@ -338,130 +326,98 @@ const GoodsSearchList = props => {
                     <Button key='back' onClick={handleCancel}>
                         취소
                     </Button>,
-                    <Button key='submit' type='primary' loading={loading} onClick={handleOk}>
+                    <Button key='submit' type='primary' onClick={handleOk}>
                         확인
                     </Button>
                 ]}>
-                <Spin spinning={loading} size='large'>
-                    <div className='modal-condition'>
-                        <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    구매처
-                                </Text>
-                            </Col>
-                            <Col span={5}>
-                                <Select
-                                    name='vendorId'
-                                    placeholder='구매처 선택'
-                                    className='fullWidth'
-                                    value={state.vendorId != '' ? state.vendorId : undefined}
-                                    onChange={handleChangeVendor}>
-                                    {ownerList.map(item => (
-                                        <Option key={item.value}>{item.label}</Option>
-                                    ))}
-                                </Select>
-                            </Col>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    브랜드
-                                </Text>
-                            </Col>
-                            <Col span={9}>
-                                <Select
-                                    name='brandId'
-                                    placeholder='브랜드 선택'
-                                    className='fullWidth'
-                                    value={state.brandId != '' ? state.brandId : undefined}
-                                    disabled>
-                                    {brandList.map(item => (
-                                        <Option key={item.codeId}>{item.codeNm}</Option>
-                                    ))}
-                                </Select>
-                            </Col>
-                            <Col span={2}>
-                                <Button onClick={showBrand}>검색</Button>
-                            </Col>
-                        </Row>
-                        <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    품목
-                                </Text>
-                            </Col>
-                            <Col span={8}>
-                                <Input
-                                    name='assortId'
-                                    placeholder='품목코드'
-                                    value={state.assortId != '' ? state.assortId : undefined}
-                                    onChange={handleInputChange}
-                                />
-                            </Col>
-                            <Col span={12}>
-                                <Input
-                                    name='assortNm'
-                                    placeholder='품목명'
-                                    value={state.assortNm != '' ? state.assortNm : undefined}
-                                    onChange={handleInputChange}
-                                />
-                            </Col>
-                        </Row>
-                        <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    카테고리
-                                </Text>
-                            </Col>
-                            <Col span={20} style={{ paddingTop: '3px' }}>
-                                <Text>{state.categoryLabel != '' ? state.categoryLabel : undefined}</Text>
-                                &nbsp;
-                                <Cascader name='categoryId' options={state.categories} onChange={onChangeCategory}>
-                                    <a href='#'>카테고리 선택</a>
-                                </Cascader>
-                            </Col>
-                        </Row>
-                        <Row className='marginTop-10'>
-                            <Col span={24}>
-                                <Button type='primary' className='fullWidth' onClick={getSearch}>
-                                    조회
-                                </Button>
-                            </Col>
-                        </Row>
-
-                        <div>
-                            <div className='ag-theme-alpine' style={{ height: 250, width: '100%', paddingTop: '5px' }}>
-                                <AgGridReact
-                                    className='marginTop-10'
-                                    columnDefs={columnDefs()}
-                                    rowData={state.rowData}
-                                    ensureDomOrder={true}
-                                    suppressRowClickSelection={true}
-                                    onFirstDataRendered={onFirstDataRendered}
-                                    enableCellTextSelection={true}
-                                    defaultColDef={{ editable: false, flex: 1, minWidth: 100, resizable: true }}
-                                    rowSelection={'single'}
-                                    onGridReady={onGridReady}></AgGridReact>
-                            </div>
-                        </div>
-                    </div>
+                <div className='modal-condition'>
+                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                        <Col span={4}>
+                            <Text className='font-15 NanumGothic-Regular' strong>
+                                브랜드
+                            </Text>
+                        </Col>
+                        <Col span={8}>
+                            <Select
+                                name='brandId'
+                                showSearch
+                                placeholder='브랜드 선택'
+                                className='fullWidth'
+                                onChange={handleSelectChange}
+                                value={state.brandId != '' ? state.brandId : undefined}
+                                filterOption={(input, option) =>
+                                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }>
+                                {brandList.map(item => (
+                                    <Option key={item.codeId}>{item.codeNm}</Option>
+                                ))}
+                            </Select>
+                        </Col>
+                        <Col span={4}>
+                            <Text className='font-15 NanumGothic-Regular' strong>
+                                상품코드
+                            </Text>
+                        </Col>
+                        <Col span={8}>
+                            <Input
+                                name='assortId'
+                                placeholder='상품코드'
+                                value={state.assortId != '' ? state.assortId : undefined}
+                                onChange={handleInputChange}
+                            />
+                        </Col>
+                    </Row>
+                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                        <Col span={4}>
+                            <Text className='font-15 NanumGothic-Regular' strong>
+                                상품명
+                            </Text>
+                        </Col>
+                        <Col span={12}>
+                            <Input
+                                name='assortNm'
+                                placeholder='상품명'
+                                value={state.assortNm != '' ? state.assortNm : undefined}
+                                onChange={handleInputChange}
+                            />
+                        </Col>
+                    </Row>
+                    <Row className='marginTop-10'>
+                        <Col span={24}>
+                            <Button type='primary' className='fullWidth searchPop' onClick={getSearch}>
+                                조회
+                            </Button>
+                        </Col>
+                    </Row>
 
                     <div>
-                        <BrandSearch
-                            isModalVisible={isBrandVisible}
-                            setIsModalVisible={setIsBrandVisible}
-                            backState={state}
-                            setBackState={setState}
-                        />
+                        <div className='ag-theme-alpine' style={{ height: 550, width: '100%', paddingTop: '5px' }}>
+                            <AgGridReact
+                                suppressDragLeaveHidesColumns={true}
+                                className='marginTop-10'
+                                columnDefs={columnDefs()}
+                                onCellClicked={onCellClicked}
+                                rowData={state.rowData}
+                                ensureDomOrder={true}
+                                suppressRowClickSelection={true}
+                                onFirstDataRendered={onFirstDataRendered}
+                                enableCellTextSelection={true}
+                                defaultColDef={{ editable: false, flex: 1, minWidth: 100, resizable: true }}
+                                rowSelection={'multiple'}
+                                onGridReady={onGridReady}></AgGridReact>
+                        </div>
                     </div>
-                    {/* <div>
-                        <PurchaseVendorSearch
-                            isModalVisible={isPurchaseVendorVisible}
-                            setIsModalVisible={setIsPurchaseVendorVisible}
-                            backState={state}
-                            setBackState={setState}
-                        />
-                    </div> */}
-                </Spin>
+                </div>
+
+                {/* <div>
+                    <BrandSearch
+                        isModalVisible={isBrandVisible}
+                        setIsModalVisible={setIsBrandVisible}
+                        backState={state}
+                        setSpin={props.setSpin}
+                        setBackState={setState}
+                    />
+                </div> */}
             </Modal>
         </Layout>
     )

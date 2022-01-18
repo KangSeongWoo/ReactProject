@@ -51,7 +51,7 @@ const AppHeader = ({ menuClick, avatar, menuToggle, logOut }) => {
                 <div>
                     <Dropdown overlay={menu} overlayStyle={{ width: '20rem' }}>
                         <div className='ant-dropdown-link'>
-                            <Avatar icon='user' src={avatar} alt='avatar' style={{ cursor: 'pointer' }} />
+                            <Avatar icon='user' alt='avatar' style={{ cursor: 'pointer' }} />
                         </div>
                     </Dropdown>
                 </div>

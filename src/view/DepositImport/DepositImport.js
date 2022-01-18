@@ -1,5 +1,5 @@
 import React from 'react'
-import { withRouter } from 'react-router'
+import { withRouter } from 'react-router-dom'
 import DepositGoodsContainer from '../../containers/DepositImport/Item/DepositGoodsContainer'
 import DepositOneContainer from '../../containers/DepositImport/Item/DepositOneContainer'
 import DepositListContainer from '../../containers/DepositImport/List/DepositListContainer'

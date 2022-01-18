@@ -8,7 +8,7 @@ import ProductItemMoveOrderContainer from '../../containers/Move/Item/ProductIte
 import MoveOrderListContainer from '../../containers/Move/List/MoveOrderListContainer'
 import MoveProcessListContainer from '../../containers/Move/List/MoveProcessListContainer'
 
-import { withRouter } from 'react-router'
+import { withRouter } from 'react-router-dom'
 
 const Move = (props) => {
     let { match, location } = props;

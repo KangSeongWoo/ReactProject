@@ -4,23 +4,23 @@ import LayoutTemplate from '../../components/template/LayoutTemplate'
 import * as actions from '../../store/actionCreators'
 
 const mapDispatchToProps = (dispatch) => ({
-    LOGIN: (user) => {
-        dispatch(actions.setUserInfo(user));
+    menuClick: menuToggle => {
+        dispatch(actions.menuToggleAction(menuToggle))
     },
-    MENU_CLICK: dispatch(actions.menuToggle()),
-    LOGOUT: () => {
-        localStorage.clear();
-        dispatch(actions.logout());
+    logOut: () => {
+        dispatch(actions.logout())
     },
+    setUserInfo: user => {
+        dispatch(actions.setUserInfo(user))
+    }
 })
 
 
 const mapReduxStateToReactProps = (state) => {
     return ({
         menuToggle: state.webState.menuToggle,
-        avatar: state.user.avartar,
-        auth: state.user.auth,
-        menu: state.user.menu,
+        user: state.user.userId,
+        spin: state.webState.spin
     })
 }
 
