@@ -1,5 +1,6 @@
-import React, { useLayoutEffect, useState, useCallback } from 'react'
+import React, { useLayoutEffect, useState, useCallback , useMemo , useEffect} from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
+import { withRouter } from 'react-router-dom'
 import { Input, Row, Col, Select, DatePicker, Button, Typography, Divider } from 'antd'
 import '/src/style/custom.css'
 import Https from '../../../api/http'
@@ -35,7 +36,7 @@ const ListByProducts = props => {
         endDt: moment(),
         statusCd: '',
         orderId: '',
-        channelOrderNo: '',
+        detailSearchAns: '',
         detailSearchKd: 'channelOrderNo',
         orders: []
     })
@@ -96,6 +97,7 @@ const ListByProducts = props => {
             { headerName: '주문상품', field: 'goodsNm' },
             { headerName: '옵션1', field: 'optionNm1' },
             { headerName: '옵션2', field: 'optionNm2' },
+            { headerName: '옵션3', field: 'optionNm3' },
             { headerName: '고도몰옵션정보', field: 'optionInfo' },
             { headerName: '수량', field: 'qty' },
             {
@@ -138,6 +140,8 @@ const ListByProducts = props => {
     }
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setView()
     }, [])
@@ -182,7 +186,7 @@ const ListByProducts = props => {
         param.statusCd = Common.trim(state.statusCd)
         param.startDt = Common.trim(state.startDt.format('YYYY-MM-DD'))
         param.endDt = Common.trim(state.endDt.format('YYYY-MM-DD'))
-        param.channelOrderNo = Common.trim(state.channelOrderNo)
+        param[state.detailSearchKd] = Common.trim(state.detailSearchAns)
 
         console.log('param : ' + JSON.stringify(param))
 
@@ -371,9 +375,17 @@ const ListByProducts = props => {
         props.setSpin(false)
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <div className='notice-wrapper'>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['주문', '상품별주문리스트']}></CustomBreadcrumb>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={16}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth' onClick={exportExcel} ghost>
@@ -497,7 +509,7 @@ const ListByProducts = props => {
                             </Text>
                         </Col>
                         <Col span={16}>
-                            <InputGroup compact>
+                            <InputGroup compact style={{display : 'flex'}}>
                                 <Select defaultValue='channelOrderNo' onChange={handleChange}>
                                     <Option value='channelOrderNo'>체널주문번호</Option>
                                     <Option value='custNm'>주문자명</Option>
@@ -506,9 +518,11 @@ const ListByProducts = props => {
                                     <Option value='deliNm'>수령자명</Option>
                                     <Option value='deliHp'>수령자휴대번호</Option>
                                     <Option value='deliTel'>수령자전화번호</Option>
+                                    <Option value='assortId'>품목코드</Option>
+                                    <Option value='assortNm'>품목명</Option>
                                 </Select>
                                 <Input
-                                    name={state.detailSearchKd}
+                                    name='detailSearchAns'
                                     style={{ width: '77.5%' }}
                                     onChange={handlechangeInput}
                                 />
@@ -518,16 +532,18 @@ const ListByProducts = props => {
                 </Col>
             </Row>
 
+</div>
             <Row className=' marginTop-10'>
-                <div className='ag-theme-alpine marginTop-10' style={{ width: '100%', height: 600 }}>
-                    <AgGridReact
+                <div
+                    className='ag-theme-alpine marginTop-10'
+                    style={{ width: '100%', height: props.height }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         onRowDoubleClicked={goDetail}
                         suppressDragLeaveHidesColumns={true}
                         rowData={state.orders}
                         onBodyScroll={onFirstDataRendered}
                         onCellClicked={onCellClicked}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         onFirstDataRendered={onFirstDataRendered}
                         columnDefs={columnDefs()}
                         onGridReady={onGridReady}></AgGridReact>
@@ -537,4 +553,4 @@ const ListByProducts = props => {
     )
 }
 
-export default ListByProducts
+export default withRouter(ListByProducts)

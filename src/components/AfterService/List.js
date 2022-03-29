@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { Layout, Input, Row, Col, Select, DatePicker, Button, Typography, Divider, Spin } from 'antd'
+import { withRouter } from 'react-router-dom'
 import '/src/style/custom.css'
 import '/src/style/table.css'
 import * as moment from 'moment'
@@ -9,7 +10,7 @@ const { Option } = Select
 const { RangePicker } = DatePicker
 const { Title, Text } = Typography
 
-const List = () => {
+const List = (props) => {
     const [state, setState] = useState({
         type: '1',
         title: '',
@@ -164,4 +165,4 @@ const List = () => {
     )
 }
 
-export default List
+export default withRouter(List)

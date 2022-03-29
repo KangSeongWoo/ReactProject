@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo,useEffect } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
@@ -36,11 +36,10 @@ for (let i = 0; i < keys.length; i++) {
 const MoveProcess = props => {
     const { userId } = props
 
-    console.log('유저 ID : ' + userId)
-
     const [gridApi, setGridApi] = useState(null)
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [storageList, setStorageList] = useState([])
+    const [selectedRows, setSelectedRows] = useState(0);
 
     // API 호출 get state
     const [getData, setGetData] = useState({
@@ -109,6 +108,18 @@ const MoveProcess = props => {
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
             { field: 'qty', headerName: '수량', editable: false, suppressMenu: true }
         ]
     }
@@ -120,6 +131,8 @@ const MoveProcess = props => {
     }, [])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
     }, [])
 
@@ -273,11 +286,25 @@ const MoveProcess = props => {
 
         params.columnApi.autoSizeColumns(allColumnIds, false)
     }
+    
+    const onSelectionChanged = () => {
+        var selectedRows = gridApi.getSelectedRows()
+
+        setSelectedRows(selectedRows.length);
+    }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
 
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['이동', '이동처리']}></CustomBreadcrumb>
-
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={[16, 8]}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={checkTheValue} ghost>
@@ -373,21 +400,23 @@ const MoveProcess = props => {
                     </Row>
                 </Col>
             </Row>
-
+</div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 600, width: '100%' }}>
-                    <AgGridReact
+                <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                <div className='ag-theme-alpine marginTop-10' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         suppressRowClickSelection={true}
+                        onSelectionChanged={ onSelectionChanged}
                         onFirstDataRendered={onFirstDataRendered}
                         rowSelection={'multiple'}
                         columnDefs={columnDefs()}
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

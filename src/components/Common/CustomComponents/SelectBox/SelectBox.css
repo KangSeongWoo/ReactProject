@@ -1,0 +1,58 @@
+/* OptionBox 보이기 하기! */
+.dp { 
+	max-height : 100px;
+	transition: all 0.3s ease;
+}
+
+/* OptionBox 안 보이기 하기! */
+.dp-none {
+	max-height : 0px;
+	transition: all 0.3s ease;
+}
+
+#selectBox {
+	border : 1px solid #d9d9d9; 
+	height : 43px; 
+	border-radius: 4px; 
+	display: flex;
+	background-color: #fff;
+	cursor: pointer;
+}
+
+#selectBox > div {
+	min-width : 99px; 
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	line-height: 41px;
+	margin-left: 10px;
+	margin-right: 7px;
+}
+
+#selectBox > span {
+	line-height: 45px; 
+	margin-right: 7px;
+}
+
+#optionBox > ul{
+	overflow:overlay; 
+	list-style: none; 
+	background-color: #fff; 
+	position: relative; 
+	padding-inline-start: 0px; 
+	border-radius: 4px;
+	z-index: 100;
+	cursor: pointer;
+	border : 1px solid #d9d9d9;
+	/* top: 40px; 
+	left: 9px;  */
+}
+
+#optionBox li {
+	padding: 5px 12px; 
+	margin: 6px 0px;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+}

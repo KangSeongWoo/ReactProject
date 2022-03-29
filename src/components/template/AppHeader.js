@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { withRouter } from 'react-router-dom'
 import { Menu, Dropdown, Icon, Avatar, Badge, Layout } from 'antd'
 
 const { Header } = Layout
 
-const AppHeader = ({ menuClick, avatar, menuToggle, logOut }) => {
+const AppHeader = ({ menuClick, avatar, menuToggle, logOut, host }) => {
     const menu = (
         <Menu>
-            <Menu.ItemGroup title='설정'>
+            {/* <Menu.ItemGroup title='설정'>
                 <Menu.Divider />
                 <Menu.Item>
                     <Icon type='edit' />
@@ -18,7 +18,7 @@ const AppHeader = ({ menuClick, avatar, menuToggle, logOut }) => {
                     환경설정
                 </Menu.Item>
             </Menu.ItemGroup>
-            <Menu.Divider />
+            <Menu.Divider /> */}
             <Menu.Item>
                 <span onClick={logOut}>
                     <Icon type='logout' /> 로그아웃
@@ -34,9 +34,10 @@ const AppHeader = ({ menuClick, avatar, menuToggle, logOut }) => {
                     onClick={menuClick}
                     type={menuToggle ? 'menu-unfold' : 'menu-fold'}
                 />
+                <span style={{color: 'red', fontWeight: 'bold', fontSize: '18px',marginLeft: '30px'}}>{ host }</span>
             </div>
             <div className='right'>
-                <div className='mr15'>
+                {/* <div className='mr15'>
                     <a rel='noopener noreferrer' href='/' target='_blank'>
                         <Icon type='github' style={{ color: '#000' }} />
                     </a>
@@ -47,7 +48,7 @@ const AppHeader = ({ menuClick, avatar, menuToggle, logOut }) => {
                             <Icon type='bell' />
                         </a>
                     </Badge>
-                </div>
+                </div> */}
                 <div>
                     <Dropdown overlay={menu} overlayStyle={{ width: '20rem' }}>
                         <div className='ant-dropdown-link'>

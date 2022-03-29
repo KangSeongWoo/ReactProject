@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import {
     Layout,
@@ -19,6 +19,7 @@ import TrdstTable from '../Component/TrdstTable'
 import '/src/style/custom.css'
 import * as moment from 'moment'
 import Https from '../../../api/http'
+import { withRouter } from 'react-router-dom'
 import * as Common from '../../../utils/Common.js'
 
 const { Option } = Select
@@ -102,6 +103,55 @@ const Create = props => {
         { title: '주문일시', dataIndex: 'orderDate', key: 'orderDate' },
         { title: '주문자명', dataIndex: 'custNm', key: 'custNm', searchField: true },
         {
+            title: '거래처',
+            dataIndex: 'vendorId',
+            key: 'vendorId',
+            render: row => {
+                return (
+                    <Select placeholder="거래처 선택" value={row.vendorId != '' ? row.vendorId : undefined} style={{ width: 119 }} onChange={(e) => {
+                        let tempList = JSON.parse(JSON.stringify(orderList));
+
+                        tempList.forEach(item => {
+                            if ((item.assortId === row.assortId && item.itemId === row.itemId) || ((item.channelGoodsNo !== undefined && item.channelGoodsNo !== null && item.channelGoodsNo !== '') && (item.channelGoodsNo === row.channelGoodsNo))) {
+                                item.vendorId = e
+                            }
+                        })
+
+                        let params = {};
+                        
+                        params.channelGoodsNo = Common.trim(row.channelGoodsNo);
+                        params.assortId = Common.trim(row.assortId);
+                        params.vendorId = Common.trim(e);
+                        
+                        props.setSpin(true)
+                        return Https.postProductInfoUpdate(params)
+                            .then(response => {
+                                console.log(response)
+
+                                //setOrderList(tempList)
+
+                                getPurchaseVendorsItem(state.vendorId,state.purchaseVendorNm)
+                                
+                                props.setSpin(false)
+                            })
+                            .catch(error => {
+                                Common.commonNotification({
+                                    kind: 'error',
+                                    message: '에러 발생',
+                                    description: '잠시후 다시 시도해 주세요'
+                                })
+                                console.error(error)
+                                props.setSpin(false)
+                            }) // ERROR
+                    }}>
+                    {ownerList.map(item => (
+                        <Option key={item.purchaseVendorId}>{item.purchaseVendorName}</Option>
+                    ))}
+                    </Select>
+                )
+            }
+        },
+        {
             title: '이미지',
             dataIndex: 'imagePath',
             key: 'imagePath',
@@ -156,7 +206,9 @@ const Create = props => {
         },
         { title: '모델번호', dataIndex: 'modelNo', key: 'modelNo' },
         { title: '상품명', dataIndex: 'assortNm', key: 'assortNm' },
-        { title: '옵션', dataIndex: 'optionNm', key: 'optionNm' },
+        { title: '옵션1', dataIndex: 'optionNm1', key: 'optionNm1' },
+        { title: '옵션2', dataIndex: 'optionNm2', key: 'optionNm2' },
+        { title: '옵션3', dataIndex: 'optionNm3', key: 'optionNm3' },
         { title: '원산지', dataIndex: 'origin', key: 'origin' },
         { title: '카테고리', dataIndex: 'custCategory', key: 'custCategory' },
         { title: '재질', dataIndex: 'material', key: 'material' },
@@ -198,6 +250,8 @@ const Create = props => {
 
     // 화면 진입시 랜더링 하기 전에
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setInit()
     }, [])
@@ -493,7 +547,8 @@ const Create = props => {
                 <CustomBreadcrumb arr={['발주', '발주등록(주문)']}></CustomBreadcrumb>
             </div>
 
-            <div className='notice-wrapper' style={{ overflowY: 'scroll', height: '800px' }}>
+            <div className='notice-wrapper'>
+            <div className='notice-condition'>
                 <Row style={{ marginTop: '14px' }}>
                     <Col span={7} style={{ paddingRight: '12px' }}>
                         <div className=''>
@@ -590,6 +645,7 @@ const Create = props => {
                         />
                     </Col>
                 </Row>
+                </div>
                 <Row style={{ marginTop: '14px' }}>
                     <Col span={7} style={{ paddingRight: '12px' }}>
                         <div className=''>
@@ -600,13 +656,13 @@ const Create = props => {
                                 rowKey={'purchaseVendorId'}
                                 dataSource={ownerList}
                                 rowSelection={rowSelection1}
-                                style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '500px' }}
+                                style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: props.height/2 }}
                             />
                         </div>
                     </Col>
                     <Col span={17}>
-                        {React.useMemo(() => {
-                            return (
+                        {/* {React.useMemo(() => {
+                            return ( */}
                                 <TrdstTable
                                     name='productList'
                                     columns={productListColumns}
@@ -617,9 +673,10 @@ const Create = props => {
                                     setSaveOrderList={setSaveOrderList}
                                     stateRowkey={stateRowkey}
                                     setStateRowkey={setStateRowkey}
+                                    style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: props.height/2 }}
                                 />
-                            )
-                        }, [orderList, saveOrderList])}
+                            {/* )
+                        }, [orderList, saveOrderList,props.height])} */}
                     </Col>
                 </Row>
 
@@ -633,7 +690,7 @@ const Create = props => {
                             pagination={false}
                             columns={selectedListColumns}
                             dataSource={saveOrderList}
-                            style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '500px' }}
+                            style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: props.height/2 }}
                         />
                     </Col>
                 </Row>
@@ -643,4 +700,4 @@ const Create = props => {
 }
 
 //export default Create
-export default React.memo(Create)
+export default withRouter(Create)

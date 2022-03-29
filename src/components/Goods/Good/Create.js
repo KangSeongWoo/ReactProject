@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useState } from 'react'
+import React, { useCallback, useLayoutEffect, useState,useEffect , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import * as Constans from '../../../utils/Constans'
@@ -20,7 +20,8 @@ import {
     Card,
     Typography,
     Table,
-    Radio
+    Radio,
+    
 } from 'antd'
 import '/src/style/custom.css'
 import * as moment from 'moment'
@@ -32,10 +33,10 @@ import PurchaseVendorSearch from '../../Common/Purchase/VendorList'
 import OptionList from './OptionList'
 import * as Common from '../../../utils/Common.js'
 import SunEditor from 'suneditor-react'
-import 'suneditor/dist/css/suneditor.min.css' // Import Sun Editor's CSS File
 import plugins from 'suneditor/src/plugins'
 import { ko } from 'suneditor/src/lang'
 import queryStirng from 'query-string'
+import '/src/style/suneditor.min.css'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
@@ -62,7 +63,7 @@ const Create = props => {
 
     const [state, setState] = useState({
         categories: [],
-        optionGbNm1: '',
+        optionGbNm1: '색상',
         optionGbNm2: '',
         onfirmDirty: false,
         autoCompleteResult: [],
@@ -119,8 +120,14 @@ const Create = props => {
         fileList: [],
         mainImageList: [],
         addImageList: [],
-        optionList1: [],
+        optionList1: [{
+            seq: 'tmp' + getUUID(),
+            value: '기본색상',
+            type: '01',
+            status: 'i'
+        }],
         optionList2: [],
+        optionList3: [],
         itemList: [],
         vendorId: '',
         purchaseVendorNm: '',
@@ -135,6 +142,8 @@ const Create = props => {
     }, [])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
         document.addEventListener('keyup', hotkeyFunction)
     }, [])
@@ -284,21 +293,64 @@ const Create = props => {
         let items = []
         items = []
 
-        itemList.map(item => {
-            let item1 = {
-                itemId: item.status != 'i' ? Common.trim(item.itemId) : '',
-                shortYn: Common.trim(item.shortageYn),
-                addPrice: Common.trim(item.addPrice),
+        // itemList.map(item => {
+        //     let item1 = {
+        //         itemId: item.status != 'i' ? Common.trim(item.itemId) : '',
+        //         shortYn: Common.trim(item.shortageYn),
+        //         addPrice: Common.trim(item.addPrice),
 
-                variationSeq1: item.status1 != 'i' ? Common.trim(item.seq1) : '',
-                variationValue1: Common.trim(item.value1),
-                variationSeq2: item.status2 != 'i' ? Common.trim(item.seq2) : '',
-                variationValue2: Common.trim(item.value2),
-                variationSeq3: item.status2 != 'i' ? Common.trim(item.seq3) : '',
-                variationValue3: Common.trim(item.value3)
+        //         variationSeq1: item.status1 != 'i' ? Common.trim(item.seq1) : '',
+        //         variationValue1: Common.trim(item.value1),
+        //         variationSeq2: item.status2 != 'i' ? Common.trim(item.seq2) : '',
+        //         variationValue2: Common.trim(item.value2),
+        //         variationSeq3: item.status2 != 'i' ? Common.trim(item.seq3) : '',
+        //         variationValue3: Common.trim(item.value3)
+        //     }
+
+        //     items.push(item1)
+        // })
+        
+        
+        for (let i = 0; i < itemList.length; i++){
+            if (items.findIndex((item) => item.itemId == itemList[i].itemId) == -1) {
+                // 없는 경우
+                let item1 = {
+                    itemId: Common.trim(itemList[i].itemId),
+
+                    variationSeq1: itemList[i].status1 != 'i' ? Common.trim(itemList[i].seq1) : '',
+                    variationValue1: Common.trim(itemList[i].value1),
+                    variationSeq2: itemList[i].status2 != 'i' ? Common.trim(itemList[i].seq2) : '',
+                    variationValue2: Common.trim(itemList[i].value2),
+                    variationSeq3: itemList[i].status2 != 'i' ? Common.trim(itemList[i].seq3) : '',
+                    variationValue3: Common.trim(itemList[i].value3),
+                    itemSupplier: [{
+                        sno: '',
+                        itemId: itemList[i].status != 'i' ? Common.trim(itemList[i].itemId) : '',
+                        supplierId: Common.trim(itemList[i].supplierId),
+                        salePrice : Common.trim(itemList[i].salePrice),
+                        stockCnt : Common.trim(itemList[i].stockCnt),
+                        saleYn : Common.trim(itemList[i].saleYn),
+                    }]
+                }
+
+                items.push(item1)
+            } else {
+                // 있는 경우
+                let index = items.findIndex((item) => item.itemId == itemList[i].itemId);
+                
+                items[index].itemSupplier.push({
+                    sno: '',
+                    itemId: itemList[i].status != 'i' ? Common.trim(itemList[i].itemId) : '',
+                    supplierId: Common.trim(itemList[i].supplierId),
+                    salePrice : Common.trim(itemList[i].salePrice),
+                    stockCnt : Common.trim(itemList[i].stockCnt),
+                    saleYn : Common.trim(itemList[i].saleYn),
+                })
             }
-
-            items.push(item1)
+        }
+        
+        items.map((item) => {
+            item.itemId = ''
         })
 
         let uploadMainImage = []
@@ -388,7 +440,8 @@ const Create = props => {
             items: Common.trim(items),
             uploadMainImage: Common.trim(uploadMainImage),
             uploadAddImage: Common.trim(uploadAddImage),
-            vendorId: Common.trim(state.vendorId)
+            vendorId: Common.trim(state.vendorId),
+            userId : Common.trim(state.userId)
         }
 
         console.log(JSON.stringify(goodsData))
@@ -582,6 +635,7 @@ const Create = props => {
                                 obj = {}
 
                                 obj.itemId = 'tmp' + Common.trim(getUUID())
+                                obj.seq = 0
                                 obj.seq1 = Common.trim(optionList1[o1].seq)
                                 obj.value1 = Common.trim(optionList1[o1].value)
                                 obj.status1 = Common.trim(optionList1[o1].status)
@@ -591,8 +645,10 @@ const Create = props => {
                                 obj.seq3 = Common.trim(optionList3[o3].seq)
                                 obj.value3 = Common.trim(optionList3[o3].value)
                                 obj.status3 = Common.trim(optionList3[o3].status)
-                                obj.shortageYn = '01'
-                                obj.addPrice = ''
+                                obj.supplierId = '0001'
+                                obj.stockCnt = 0
+                                obj.saleYn = '01'
+                                obj.salePrice = ''
                                 obj.status = 'i'
 
                                 list.push(obj)
@@ -602,14 +658,17 @@ const Create = props => {
                             obj = {}
 
                             obj.itemId = 'tmp' + Common.trim(getUUID())
+                            obj.seq = 0
                             obj.seq1 = Common.trim(optionList1[o1].seq)
                             obj.value1 = Common.trim(optionList1[o1].value)
                             obj.status1 = Common.trim(optionList1[o1].status)
                             obj.seq2 = Common.trim(optionList2[o2].seq)
                             obj.value2 = Common.trim(optionList2[o2].value)
                             obj.status2 = Common.trim(optionList2[o2].status)
-                            obj.shortageYn = '01'
-                            obj.addPrice = ''
+                            obj.supplierId = '0001'
+                            obj.stockCnt = 0
+                            obj.saleYn = '01'
+                            obj.salePrice = ''
                             obj.status = 'i'
 
                             list.push(obj)
@@ -622,14 +681,17 @@ const Create = props => {
                             obj = {}
 
                             obj.itemId = 'tmp' + Common.trim(getUUID())
+                            obj.seq = 0
                             obj.seq1 = Common.trim(optionList1[o1].seq)
                             obj.value1 = Common.trim(optionList1[o1].value)
                             obj.status1 = Common.trim(optionList1[o1].status)
                             obj.seq3 = Common.trim(optionList3[o3].seq)
                             obj.value3 = Common.trim(optionList3[o3].value)
                             obj.status3 = Common.trim(optionList3[o3].status)
-                            obj.shortageYn = '01'
-                            obj.addPrice = ''
+                            obj.supplierId = '0001'
+                            obj.stockCnt = 0
+                            obj.saleYn = '01'
+                            obj.salePrice = ''
                             obj.status = 'i'
 
                             list.push(obj)
@@ -639,11 +701,14 @@ const Create = props => {
                         obj = {}
 
                         obj.itemId = 'tmp' + Common.trim(getUUID())
+                        obj.seq = 0
                         obj.seq1 = Common.trim(optionList1[o1].seq)
                         obj.value1 = Common.trim(optionList1[o1].value)
                         obj.status1 = Common.trim(optionList1[o1].status)
-                        obj.shortageYn = '01'
-                        obj.addPrice = ''
+                        obj.supplierId = '0001'
+                        obj.stockCnt = 0
+                        obj.saleYn = '01'
+                        obj.salePrice = ''
                         obj.status = 'i'
 
                         list.push(obj)
@@ -652,7 +717,7 @@ const Create = props => {
             }
         }
 
-        let newList = list.filter(item => item.status1 == 'i' || item.status2 == 'i')
+        let newList = list.filter(item => item.status1 == 'i' || item.status1 == 'i' || item.status3 == 'i')
         console.log(newList)
         let cList = orirginalList.concat(newList)
 
@@ -666,6 +731,7 @@ const Create = props => {
         const formData = new FormData()
         formData.append('imageGb', '03')
         formData.append('file', file)
+        formData.append('userId', userId)
 
         const config = { headers: { 'Content-Type': 'multipart/form-data' } }
 
@@ -716,10 +782,10 @@ const Create = props => {
     }
 
     // 옵션으로 선택된 Row 삭제
-    const removeOptionData = target => {
+    const removeOptionData = (itemId, seq) => {
         setState({
             ...state,
-            itemList: state.itemList.filter(rows => rows.itemId !== target)
+            itemList: state.itemList.filter(rows => !(rows.itemId === itemId && rows.seq === seq))
         })
     }
 
@@ -793,20 +859,80 @@ const Create = props => {
             categoryLabel: ''
         })
     }
-
+    
+    const tempSuppiers = [
+        { label: ' 공급사1', value: '0001' },
+        { label: ' 공급사2', value: '0002' },
+        { label: ' 공급사3', value: '0003' },
+        { label: ' 공급사4', value: '0004' },
+           
+    ]
+    
     const columns = [
+        {
+            title: '공급사추가',
+            dataIndex: 'addSupplier',
+            key: 'addSupplier',
+            render: (index, target) => (
+                <Icon type="plus" onClick={() => {
+                    let index = state.itemList.findIndex(arr => arr.itemId === target.itemId);
+                    
+                    let tempList = state.itemList;
+                    
+                    let tempTarget = {...target};
+                    
+                    tempTarget.seq = tempTarget.seq + 1 
+                    
+                    tempList.splice(index, 0, tempTarget)
+                    
+                    setState({
+                        ...state,
+                        itemList :tempList
+                    })
+                    
+                }} />
+            )
+        },
         { title: '옵션1', dataIndex: 'value1', key: 'value1' },
         { title: '옵션2', dataIndex: 'value2', key: 'value2' },
         { title: '옵션3', dataIndex: 'value3', key: 'value3' },
         {
+            title: '공급사',
+            dataIndex: 'supplierId',
+            key: 'supplierId',
+            render: (index, target) => (
+                <Select
+                    style={{ width: '100%' }}
+                    onChange={v => {
+                        let tempList = state.itemList
+
+                        tempList.forEach(item => {
+                            if (item.itemId === target.itemId && item.seq === target.seq) {
+                                item.supplierId = v
+                            }
+                        })
+
+                        setState({
+                            ...state,
+                            itemList: tempList
+                        })
+                    }}
+                    value={state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0].supplierId}>
+                    {tempSuppiers.map(item => (
+                        <Option key={item.value}>{item.label}</Option>
+                    ))}
+                </Select> 
+            )
+        },
+        {
             title: '옵션추가금액',
-            dataIndex: 'addPrice',
-            key: 'addPrice',
+            dataIndex: 'salePrice',
+            key: 'salePrice',
             render: (index, target) => {
                 return (
                     <Input
                         style={{ width: '100%' }}
-                        value={state.itemList.filter(item => item.itemId === target.itemId)[0].addPrice}
+                        value={state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0].salePrice}
                         onChange={e => {
                             let _pattern = /^(\d{1,10}([.]\d{0,2})?)?$/
                             if (!_pattern.test(e.target.value)) {
@@ -816,8 +942,40 @@ const Create = props => {
                             let tempList = state.itemList
 
                             tempList.forEach(item => {
-                                if (item.itemId === target.itemId) {
-                                    item.addPrice = e.target.value
+                                if (item.itemId === target.itemId && item.seq === target.seq) {
+                                    item.salePrice = e.target.value
+                                }
+                            })
+
+                            setState({
+                                ...state,
+                                itemList: tempList
+                            })
+                        }}
+                    />
+                )
+            }
+        },
+        {
+            title: '재고수량',
+            dataIndex: 'stockCnt',
+            key: 'stockCnt',
+            render: (index, target) => {
+                return (
+                    <Input
+                        style={{ width: '100%' }}
+                        value={state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0].stockCnt}
+                        onChange={e => {
+                            let _pattern = /^(\d{1,10}([.]\d{0,2})?)?$/
+                            if (!_pattern.test(e.target.value)) {
+                                return false
+                            }
+
+                            let tempList = state.itemList
+
+                            tempList.forEach(item => {
+                                if (item.itemId === target.itemId && item.seq === target.seq) {
+                                    item.stockCnt = e.target.value
                                 }
                             })
 
@@ -832,8 +990,8 @@ const Create = props => {
         },
         {
             title: '품절구분',
-            dataIndex: 'shortageYn',
-            key: 'shortageYn',
+            dataIndex: 'saleYn',
+            key: 'saleYn',
             render: (index, target) => {
                 return (
                     <Select
@@ -842,8 +1000,8 @@ const Create = props => {
                             let tempList = state.itemList
 
                             tempList.forEach(item => {
-                                if (item.itemId === target.itemId) {
-                                    item.shortageYn = v
+                                if (item.itemId === target.itemId && item.seq === target.seq) {
+                                    item.saleYn = v
                                 }
                             })
 
@@ -852,7 +1010,7 @@ const Create = props => {
                                 itemList: tempList
                             })
                         }}
-                        value={state.itemList.filter(item => item.itemId === target.itemId)[0].shortageYn}>
+                        value={state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0].saleYn}>
                         {Constans.SHORTAGEYN.map(item => (
                             <Option key={item.value}>{item.label}</Option>
                         ))}
@@ -868,7 +1026,7 @@ const Create = props => {
                 return (
                     <Button
                         onClick={() => {
-                            removeOptionData(record.itemId)
+                            removeOptionData(record.itemId, record.seq)
                         }}>
                         삭제
                     </Button>
@@ -917,7 +1075,7 @@ const Create = props => {
             </div>
 
             <div className='notice-wrapper'>
-                <div className='notice-content'>
+                <div className='notice-content' style={{ width: '100%' ,overflowY : 'scroll', height : props.height }}>
                     <Row type='flex' justify='end' gutter={16}>
                         <Col style={{ width: '150px' }}>
                             <Button type='primary' className='fullWidth' onClick={refresh} ghost>
@@ -931,8 +1089,10 @@ const Create = props => {
                         </Col>
                     </Row>
                     <Divider style={{ margin: '10px 0' }} />
-                    <div className='notice-condition'>
-                        <Tabs defaultActiveKey='1' tabPosition={'left'}>
+                    <div>
+                        <Tabs defaultActiveKey='1' tabPosition={'left'} onTabClick={(key, event) => {
+                            if(key === '5') combineOption1();
+                        }}>
                             <TabPane tab={`상품기본설정`} key={1}>
                                 <Row gutter={[16, 8]} className='onVerticalCenter'>
                                     <Col span={2}>
@@ -1295,6 +1455,7 @@ const Create = props => {
                                                     }
                                                     fmData.append('imageGb', '01')
                                                     fmData.append('file', file)
+                                                    fmData.append('userId', userId)
                                                     Https.postUploadImage(fmData, config)
                                                         .then(res => {
                                                             //     onSuccess(file);
@@ -1364,6 +1525,7 @@ const Create = props => {
                                                     }
                                                     fmData.append('imageGb', '02')
                                                     fmData.append('file', file)
+                                                    fmData.append('userId', userId)
                                                     Https.postUploadImage(fmData, config)
                                                         .then(res => {
                                                             //     onSuccess(file);
@@ -1608,7 +1770,7 @@ const Create = props => {
                                 </Row>
                             </TabPane>
                             <TabPane tab={`옵션`} key={5}>
-                                <Row gutter={[16, 8]} className='onVerticalCenter'>
+                                {/* <Row gutter={[16, 8]} className='onVerticalCenter'>
                                     <Col span={3}>
                                         <Text className='font-15 NanumGothic-Regular' strong>
                                             옵션사용여부
@@ -1620,7 +1782,7 @@ const Create = props => {
                                                 setState({
                                                     ...state,
                                                     optionUseYn: e.target.value,
-                                                    optionGbNm1: '',
+                                                    optionGbNm1: '색상',
                                                     optionGbNm2: '',
                                                     optionGbNm3: '',
                                                     optionList1: [],
@@ -1636,7 +1798,7 @@ const Create = props => {
                                     </Col>
                                 </Row>
                                 {state.optionUseYn == '01' && (
-                                    <>
+                                    <> */}
                                         <Row gutter={[16, 8]} className='onVerticalCenter marginTop-15'>
                                             <Col span={8}>
                                                 <Text className='font-15 NanumGothic-Regular' strong>
@@ -1668,7 +1830,7 @@ const Create = props => {
                                             </Col>
                                             <Col span={8}>
                                                 <OptionList
-                                                    items={state.optionUseYn == '01' ? state.optionList1 : []}
+                                                    items={state.optionList1}
                                                     onChangeItems={v => {
                                                         console.log(v)
                                                         setState({
@@ -1680,7 +1842,7 @@ const Create = props => {
                                             </Col>
                                         </Row>
                                         <Row gutter={[16, 8]} className='onVerticalCenter marginTop-15'>
-                                            <Col span={8}>
+                                            <Col span={8}> 
                                                 <Row>
                                                     <Col className='col-r-margin' span={19}>
                                                         <Input
@@ -1748,12 +1910,11 @@ const Create = props => {
                                                 </Button>
                                             </Col>
                                         </Row>
-                                    </>
-                                )}
+                                    {/* </>
+                                )} */}
 
                                 {state.itemList.length > 0 && (
                                     <Table
-                                        rowKey='itemId'
                                         pagination={false}
                                         columns={columns}
                                         dataSource={state.itemList}

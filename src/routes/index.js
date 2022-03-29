@@ -1,17 +1,18 @@
 import loadable from '@loadable/component'
 
-const Index             = loadable(() => import('../view/Common/Index'))
-const AfterService      = loadable(() => import('../view/AfterService/AfterService'))
-const Order_OrderList   = loadable(() => import('../view/Order/OrderList'))
-const Good              = loadable(() => import('../view/Goods/Good'))
-const PurchaseItem      = loadable(() => import('../view/Purchase/PurchaseItem'))
-const DepositDomestic   = loadable(() => import('../view/DepositDomestic/DepositDomestic')) // 국내입고
-const DepositImport     = loadable(() => import('../view/DepositImport/DepositImport')) // 해외입고
-const ReleaseDomestic   = loadable(() => import('../view/ReleaseDomestic/ReleaseDomestic')) // 출고(내수)
-const ReleaseImport     = loadable(() => import('../view/ReleaseImport/ReleaseImport')) // 출고(수입)
-const Move              = loadable(() => import('../view/Move/Move')) // 이동
-const OrderStockList    = loadable(() => import('../view/OrderStock/OrderStock'))
-const Search            = loadable(() => import('../view/Search/Search'));
+const Index                 = loadable(() => import('../views/Common/Index'))
+const AfterService          = loadable(() => import('../views/AfterService/AfterService'))
+const Order_OrderList       = loadable(() => import('../views/Order/OrderList'))
+const Good                  = loadable(() => import('../views/Goods/Good'))
+const PurchaseItem          = loadable(() => import('../views/Purchase/PurchaseItem'))
+const DepositDomestic       = loadable(() => import('../views/DepositDomestic/DepositDomestic')) // 국내입고
+const DepositImport         = loadable(() => import('../views/DepositImport/DepositImport')) // 해외입고
+const ReleaseDomestic       = loadable(() => import('../views/ReleaseDomestic/ReleaseDomestic')) // 출고(내수)
+const ReleaseImport         = loadable(() => import('../views/ReleaseImport/ReleaseImport')) // 출고(수입)
+const Move                  = loadable(() => import('../views/Move/Move')) // 이동
+const OrderStockList        = loadable(() => import('../views/OrderStock/OrderStock'))
+const Search                = loadable(() => import('../views/Search/Search'));
+const InventoryManagement   = loadable(() => import('../views/InventoryManagement/InventoryManagement'));
 
 const routes = [
     { path: '/index', exact: true, name: 'Index', component: Index, auth: [1] },
@@ -81,6 +82,13 @@ const routes = [
         type: 'ReleaseImport'
     },
     {
+        path: '/InventoryManagement/:id',
+        exact: false,
+        name: '기타입출고',
+        component: InventoryManagement,
+        type: 'InventoryManagement'
+    },
+    {
         path: '/Move/:id',
         exact: false,
         name: '이동',
@@ -100,7 +108,7 @@ const routes = [
         name: '고도몰주문관리',
         component: OrderStockList,
         type: 'OrderStockList'
-    }
+    },
 ]
 
 export default routes

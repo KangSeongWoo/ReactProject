@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo, useEffect } from 'react'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import moment from 'moment'
@@ -38,6 +38,7 @@ const OrderItemMoveOrder = props => {
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [storageList, setStorageList] = useState([])
     const [storageCate, setStorageCate] = useState([])
+    const [selectedRows, setSelectedRows] = useState(0);
 
     // API 호출 get state
     const [getData, setGetData] = useState({
@@ -105,6 +106,18 @@ const OrderItemMoveOrder = props => {
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
             {
                 field: 'qty',
                 headerName: '수량',
@@ -117,6 +130,8 @@ const OrderItemMoveOrder = props => {
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setInit()
     }, [])
@@ -326,10 +341,25 @@ const OrderItemMoveOrder = props => {
             rowData: [...temp]
         })
     }
+    
+    const onSelectionChanged = () => {
+        var selectedRows = gridApi.getSelectedRows()
+
+        setSelectedRows(selectedRows.length);
+    }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
 
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['이동', '주문이동지시']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={[16, 8]}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={checkTheValue} ghost>
@@ -431,14 +461,15 @@ const OrderItemMoveOrder = props => {
                     </Row>
                 </Col>
             </Row>
-
+</div>
             <Row className=' marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
+                <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                <div className='ag-theme-alpine marginTop-10' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
+                        onSelectionChanged={onSelectionChanged}
                         suppressRowClickSelection={true}
                         onFirstDataRendered={onFirstDataRendered}
                         rowSelection={'multiple'}
@@ -446,6 +477,7 @@ const OrderItemMoveOrder = props => {
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

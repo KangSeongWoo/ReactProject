@@ -1,6 +1,7 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState , useMemo } from 'react';
 import { Layout, Icon, Menu } from 'antd'
 import { Link, withRouter } from 'react-router-dom'
+import Clock from '../Common/CustomComponents/Clock/Clock'
 import Logo from '../../img/logo.png'
 
 const { Sider } = Layout
@@ -65,6 +66,9 @@ const AppAside = (props) => {
                 <a rel='noopener noreferrer' href='/' target='_blank'>
                     <img src={Logo} />
                 </a>
+            </div>
+            <div>
+                <Clock/>
             </div>
             <Menu
                 mode='inline'

@@ -1,6 +1,6 @@
-import React, { useLayoutEffect, useState, useCallback } from 'react'
+import React, { useLayoutEffect, useState, useCallback , useMemo ,useEffect} from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
-import { Input, Row, Col, DatePicker, Button, Typography, Select, Divider } from 'antd'
+import { Row, Col, DatePicker, Button, Typography, Select, Divider } from 'antd'
 import '/src/style/custom.css'
 import Https from '../../../api/http'
 import '/src/style/table.css'
@@ -11,12 +11,11 @@ import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css'
 import * as Common from '../../../utils/Common.js'
-import * as XLSX from 'xlsx'
+import { withRouter } from 'react-router-dom'
 
 const { Option } = Select
 const { RangePicker } = DatePicker
 const { Text } = Typography
-const InputGroup = Input.Group
 
 // 체널구분 JSON
 let newChannelGb = {}
@@ -34,6 +33,7 @@ const ListForCancel = props => {
     const [orderStatusList, setOrderStatusList] = useState([])
     const [orderStatusGridKey, setOrderStatusGridKey] = useState([])
     const [gridApi, setGridApi] = useState(null)
+    const [selectedRows, setSelectedRows] = useState(0);
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [state, setState] = useState({
         startDt: moment().subtract(1, 'Y'),
@@ -42,6 +42,7 @@ const ListForCancel = props => {
         orders: []
     })
 
+
     const hotkeyFunction = useCallback(event => {
         if (event.key == 'F8') {
             document.querySelector('.search').click()
@@ -49,6 +50,8 @@ const ListForCancel = props => {
     }, [])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setView()
     }, [])
@@ -81,6 +84,7 @@ const ListForCancel = props => {
                 headerCheckboxSelectionFilteredOnly: true,
                 checkboxSelection: true
             },
+            { headerName: '주문자명', field: 'orderName' },
             { headerName: '연동일자', field: 'ifDt' },
             {
                 headerName: '체널구분',
@@ -270,10 +274,24 @@ const ListForCancel = props => {
                 props.setSpin(false)
             }) // ERROR
     }
+    
+    const onSelectionChanged = () => {
+        var selectedRows = gridApi.getSelectedRows()
+
+        setSelectedRows(selectedRows.length);
+    }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
 
     return (
         <div className='notice-wrapper'>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['주문', '주문취소']}></CustomBreadcrumb>
+            <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={16}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={getOrderList}>
@@ -377,14 +395,16 @@ const ListForCancel = props => {
 
             <div className='clearfix'></div>
             <p></p>
+            <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+            </div>
             <div className='notice-list'>
-                <div className='ag-theme-alpine' style={{ width: '100%', height: 600 }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine marginTop-10' style={{ width: '100%', height: props.height }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         rowSelection={'multiple'}
                         rowData={state.orders}
+                        onSelectionChanged={onSelectionChanged}
                         onFirstDataRendered={onFirstDataRendered}
                         columnDefs={columnDefs()}
                         onGridReady={onGridReady}></AgGridReact>
@@ -394,4 +414,4 @@ const ListForCancel = props => {
     )
 }
 
-export default ListForCancel
+export default withRouter(ListForCancel)

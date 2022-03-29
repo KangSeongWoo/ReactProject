@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState , useMemo, useEffect } from 'react'
 import { Layout } from 'antd'
 import { withRouter } from 'react-router-dom'
 import { Input, Modal, Spin, Typography, Row, Col, Button } from 'antd'
@@ -24,7 +24,8 @@ const Search = props => {
     const [state, setState] = useState({
         brandId: '',
         brandNm: '',
-        rowData: []
+        rowData: [],
+        
     })
 
     const columnDefs = () => {
@@ -126,6 +127,16 @@ const Search = props => {
         setGridColumnApi(params.columnApi)
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          editable: false, 
+          flex: 1, 
+          minWidth: 100, 
+          resizable: true
+        };
+    }, []);
+
     return (
         <Spin spinning={loading} size='large'>
             <Modal
@@ -141,51 +152,52 @@ const Search = props => {
                         확인
                     </Button>
                 ]}>
-                <div>
-                    <Row>
-                        <Col span={16}>
-                            <Row className='onVerticalCenter marginTop-10'>
-                                <Col span={8}>
-                                    <Text className='font-15 NanumGothic-Regular' strong>
-                                        브랜드
-                                    </Text>
-                                </Col>
-                                <Col span={16}>
-                                    <Input name='brandId' value={state.brandId} onChange={handleInputChange} />
-                                </Col>
-                            </Row>
-                            <Row className='onVerticalCenter marginTop-10'>
-                                <Col span={8}>
-                                    <Text className='font-15 NanumGothic-Regular' strong>
-                                        브랜드명
-                                    </Text>
-                                </Col>
-                                <Col span={16}>
-                                    <Input name='brandNm' value={state.brandNm} onChange={handleInputChange} />
-                                </Col>
-                            </Row>
-                        </Col>
-                        <Col span={8}>
-                            <Row type='flex' justify='end' align='middle'>
-                                <Button
-                                    className='marginTop-10'
-                                    type='primary'
-                                    style={{ width: '72px', height: '72px' }}
-                                    onClick={() => getBrandSearch(state.brandId, state.brandNm)}>
-                                    조회
-                                </Button>
-                            </Row>
-                        </Col>
-                    </Row>
+                <div className='notice-wrapper'>
+                    <div className='notice-condition'>
+                        <Row>
+                            <Col span={16}>
+                                <Row className='onVerticalCenter marginTop-10'>
+                                    <Col span={8}>
+                                        <Text className='font-15 NanumGothic-Regular' strong>
+                                            브랜드
+                                        </Text>
+                                    </Col>
+                                    <Col span={16}>
+                                        <Input name='brandId' value={state.brandId} onChange={handleInputChange} />
+                                    </Col>
+                                </Row>
+                                <Row className='onVerticalCenter marginTop-10'>
+                                    <Col span={8}>
+                                        <Text className='font-15 NanumGothic-Regular' strong>
+                                            브랜드명
+                                        </Text>
+                                    </Col>
+                                    <Col span={16}>
+                                        <Input name='brandNm' value={state.brandNm} onChange={handleInputChange} />
+                                    </Col>
+                                </Row>
+                            </Col>
+                            <Col span={8}>
+                                <Row type='flex' justify='end' align='middle'>
+                                    <Button
+                                        className='marginTop-10'
+                                        type='primary'
+                                        style={{ width: '72px', height: '72px' }}
+                                        onClick={() => getBrandSearch(state.brandId, state.brandNm)}>
+                                        조회
+                                    </Button>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </div>
                     <div>
-                        <div className='ag-theme-alpine' style={{ height: 200, width: '100%' }}>
-                            <AgGridReact
+                        <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                            <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                                 className='marginTop-10'
                                 columnDefs={columnDefs()}
                                 rowData={state.rowData}
                                 ensureDomOrder={true}
                                 enableCellTextSelection={true}
-                                defaultColDef={{ editable: true, flex: 1, minWidth: 100, resizable: true }}
                                 rowSelection={'single'}
                                 onGridReady={onGridReady}></AgGridReact>
                         </div>

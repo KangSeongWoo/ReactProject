@@ -4,6 +4,7 @@ import './style/base.css'
 import './style/App.css'
 import './style/common.scss'
 import loadable from '@loadable/component'
+import { hot } from 'react-hot-loader/root'
 
 const LayoutTemplateContainer = loadable(() => import('./containers/template/LayoutTemplateContainer'));
 const LoginContainer = loadable(() => import('./containers/Common/loginContainer'));
@@ -24,4 +25,4 @@ const App = () => {
   );
 }
 
-export default App;
+export default hot(App);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect , useMemo } from 'react'
 import { ResponsivePie } from '@nivo/pie'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'

@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo,useEffect } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import queryStirng from 'query-string'
 import { withRouter } from 'react-router-dom'
@@ -10,6 +10,7 @@ import * as GridKeyValue from '../../../utils/GridKeyValue'
 import * as Helpers from '../../../utils/Helpers'
 import * as Constans from '../../../utils/Constans'
 import * as Common from '../../../utils/Common.js'
+import * as XLSX from 'xlsx'
 
 import '/src/style/custom.css'
 import 'ag-grid-community/dist/styles/ag-grid.css'
@@ -44,53 +45,71 @@ const ReleaseProcess = props => {
     const [state, setState] = useState({
         rowData: [],
         columnDefs: [
-            { field: 'shipDt', headerName: '출고일자', editable: false, suppressMenu: true },
+            { field: 'orderDt', headerName: '주문일자', editable: false, suppressMenu: true },
             { field: 'shipIndDt', headerName: '출고지시일자', editable: false, suppressMenu: true },
-            { field: 'shipKey', headerName: '출고지시번호', editable: false, suppressMenu: true },
+            { field: 'shipDt', headerName: '출고일자', editable: false, suppressMenu: true },
+            { field: 'channelOrderNo', headerName: '고도몰주문번호', editable: false, suppressMenu: true },
+            { field: 'channelGoodsNo', headerName: '고도몰상품코드', editable: false, suppressMenu: true },
             {
-                field: 'assortGb',
-                headerName: '상품구분',
+                field: 'rackNo',
+                headerName: '렉번호',
                 editable: false,
                 suppressMenu: true,
-                cellEditor: 'select',
-                cellEditorParams: {
-                    values: Helpers.extractValues(newAssortgb)
-                },
                 valueFormatter: function(params) {
-                    return Helpers.lookupValue(newAssortgb, params.value)
-                },
-                valueParser: function(params) {
-                    return Helpers.lookupKey(newAssortgb, params.newValue)
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
                 }
             },
-            {
-                field: 'deliMethod',
-                headerName: '배송방법',
-                editable: false,
-                suppressMenu: true,
-                cellEditor: 'select',
-                cellEditorParams: {
-                    values: Helpers.extractValues(GridKeyValue.SHIPMENT)
-                },
-                valueFormatter: function(params) {
-                    return Helpers.lookupValue(GridKeyValue.SHIPMENT, params.value)
-                },
-                valueParser: function(params) {
-                    return Helpers.lookupKey(GridKeyValue.SHIPMENT, params.newValue)
-                }
-            },
-            { field: 'assortId', headerName: '품목코드', editable: false, suppressMenu: true },
-            { field: 'itemId', headerName: '상품코드', editable: false, suppressMenu: true },
-            { field: 'custNm', headerName: '주문자', editable: false, suppressMenu: true },
+            { field: 'receiverNm', headerName: '수취인명', editable: false, suppressMenu: true },
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
-            { field: 'qty', headerName: '수량', editable: false, suppressMenu: true }
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            { field: 'purchaseQty', headerName: '출고지시수량', editable: false, suppressMenu: true },
+            // { field: 'orderId', headerName: '주문번호', editable: false, suppressMenu: true },
+            // { field: 'custNm', headerName: '주문자명', editable: false, suppressMenu: true },
+            {
+                field: 'receiverAddr',
+                headerName: '주소',
+                editable: false,
+                suppressMenu: true,
+                render: record => {
+                    return (
+                        <p>
+                            {record.receiverAddr1} + {record.receiverAddr2}
+                        </p>
+                    )
+                }
+            },
+            { field: 'receiverTel', headerName: '수취인전화번호', editable: false, suppressMenu: true },
+            { field: 'receiverHp', headerName: '수취인휴대폰번호', editable: false, suppressMenu: true },
+            //{ field: 'receiverZonecode', headerName: '수취인우편번호', editable: false, suppressMenu: true },
+            // { field: 'orderMemo', headerName: '주문요청사항', editable: false, suppressMenu: true },
+            // {
+            //     title: '이미지',
+            //     dataIndex: 'imagePath',
+            //     key: 'imagePath',
+            //     render: record => {
+            //         return (
+            //             <div style={{ width: '40px', textAlign: 'center' }}>
+            //                 <img
+            //                     style={{ maxWidth: '100%' }}
+            //                     src={record.imagePath}
+            //                     onClick={() => showImages(record.imagePath)}
+            //                 />
+            //             </div>
+            //         )
+            //     }
+            // },
+            //{ field: 'itemId', headerName: '상품코드', editable: false, suppressMenu: true },
         ]
     })
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setInit()
     }, [])
@@ -227,121 +246,199 @@ const ReleaseProcess = props => {
 
         params.columnApi.autoSizeColumns(allColumnIds, true)
     }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
+    
+    const exportExcel = () => {
+        props.setSpin(true)
+        var wb = XLSX.utils.book_new()
+
+        let l = []
+
+        gridApi.selectAllFiltered()
+
+        if (gridApi.getSelectedRows().length == 0) {
+            alert('출력할 데이터가 없습니다.')
+            props.setSpin(false)
+            return false
+        }
+
+        for (let i = 0; i < gridApi.getSelectedRows().length; i++) {
+            let tempData = gridApi.getSelectedRows()[i]
+            let o = {
+                주문일자 : tempData.orderDt,
+                출고지시일자 : tempData.shipIndDt,
+                출고일자 : tempData.shipDt,
+                고도몰주문번호 : tempData.channelOrderNo,
+                고도몰상품코드 : tempData.channelGoodsNo,
+                렉번호 : tempData.rackNo,
+                수취인명 : tempData.receiverNm,
+                상품명 : tempData.assortNm,
+                옵션1 : tempData.optionNm1,
+                옵션2 : tempData.optionNm2,
+                옵션3 : tempData.optionNm3,
+                출고지시수량 : tempData.purchaseQty,
+                주소 : tempData.receiverAddr1 + ' ' + tempData.receiverAddr2,
+                수취인전화번호 : tempData.receiverTel,
+                수취인휴대폰번호 : tempData.receiverHp,
+            }
+            console.log(o)
+            l.push(o)
+        }
+        
+        var wscols = [
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 15 },
+            { wch: 20 },
+            { wch: 10 },
+            { wch: 10 },
+            { wch: 80 },
+            { wch: 10 },
+            { wch: 10 },
+            { wch: 10 },
+            { wch: 5 },
+            { wch: 100 },
+            { wch: 20 },
+            { wch: 20 },
+        ]
+        let fname = moment().format('YYYYMMDDHHmmss') + '.xlsx'
+        let ws = XLSX.utils.json_to_sheet(l)
+        ws['!cols'] = wscols
+        XLSX.utils.book_append_sheet(wb, ws, 'sheet1')
+        XLSX.writeFile(wb, fname)
+        gridApi.deselectAll()
+        props.setSpin(false)
+    }
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['국내출고', '국내출고리스트']}></CustomBreadcrumb>
-
-            <Row type='flex' justify='end' gutter={[16, 8]}>
-                <Col style={{ width: '150px' }}>
-                    <Button type='primary' className='fullWidth search' onClick={getSearchList}>
-                        조회
-                    </Button>
-                </Col>
-            </Row>
-            <Divider style={{ margin: '10px 0' }} />
-            <Row gutter={[16, 8]}>
-                <Col span={20}>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                출고지시일자
-                            </Text>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
+                    <Row type='flex' justify='end' gutter={[16, 8]}>
+                        <Col style={{ width: '150px' }}>
+                            <Button type='primary' className='fullWidth' ghost onClick={exportExcel}>
+                                출력
+                            </Button>
                         </Col>
-                        <Col span={6}>
-                            <DatePicker
-                                name='startDt'
-                                className='fullWidth'
-                                defaultValue={getData.startDt}
-                                onChange={handleChangeStartDate}
-                            />
-                        </Col>
-                        <Col span={6}>
-                            <DatePicker
-                                name='endDt'
-                                className='fullWidth'
-                                defaultValue={getData.endDt}
-                                onChange={handleChangeEndDate}
-                            />
+                        <Col style={{ width: '150px' }}>
+                            <Button type='primary' className='fullWidth search' onClick={getSearchList}>
+                                조회
+                            </Button>
                         </Col>
                     </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                출고지시번호
-                            </Text>
-                        </Col>
-                        <Col span={6}>
-                            <Input
-                                name='shipId'
-                                placeholder='출고지시번호'
-                                className='fullWidth'
-                                value={getData.shipId != '' ? getData.shipId : undefined}
-                                onInput={handlechangeInput}
-                            />
+                    <Divider style={{ margin: '10px 0' }} />
+                    <Row gutter={[16, 8]}>
+                        <Col span={20}>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        출고지시일자
+                                    </Text>
+                                </Col>
+                                <Col span={6}>
+                                    <DatePicker
+                                        name='startDt'
+                                        className='fullWidth'
+                                        defaultValue={getData.startDt}
+                                        onChange={handleChangeStartDate}
+                                    />
+                                </Col>
+                                <Col span={6}>
+                                    <DatePicker
+                                        name='endDt'
+                                        className='fullWidth'
+                                        defaultValue={getData.endDt}
+                                        onChange={handleChangeEndDate}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        출고지시번호
+                                    </Text>
+                                </Col>
+                                <Col span={6}>
+                                    <Input
+                                        name='shipId'
+                                        placeholder='출고지시번호'
+                                        className='fullWidth'
+                                        value={getData.shipId != '' ? getData.shipId : undefined}
+                                        onInput={handlechangeInput}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        상품코드
+                                    </Text>
+                                </Col>
+                                <Col span={6}>
+                                    <Input
+                                        name='assortId'
+                                        placeholder='상품코드'
+                                        className='fullWidth'
+                                        value={getData.assortId != '' ? getData.assortId : undefined}
+                                        onInput={handlechangeInput}
+                                    />
+                                </Col>
+                                <Col span={6}>
+                                    <Input
+                                        name='assortNm'
+                                        placeholder='상품명'
+                                        className='fullWidth'
+                                        value={getData.assortNm != '' ? getData.assortNm : undefined}
+                                        onInput={handlechangeInput}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        구매처
+                                    </Text>
+                                </Col>
+                                <Col span={6}>
+                                    <Select
+                                        placeholder='구매처선택'
+                                        className='fullWidth'
+                                        defaultValue={getData.channelId != '' ? getData.channelId : ''}
+                                        name='selectVendor'
+                                        onChange={handleChangeOption}>
+                                        <Option key='00'>선택</Option>
+                                        {purchaseVendorList.map(item => (
+                                            <Option key={item.value}>{item.label}</Option>
+                                        ))}
+                                    </Select>
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                상품코드
-                            </Text>
-                        </Col>
-                        <Col span={6}>
-                            <Input
-                                name='assortId'
-                                placeholder='상품코드'
-                                className='fullWidth'
-                                value={getData.assortId != '' ? getData.assortId : undefined}
-                                onInput={handlechangeInput}
-                            />
-                        </Col>
-                        <Col span={6}>
-                            <Input
-                                name='assortNm'
-                                placeholder='상품명'
-                                className='fullWidth'
-                                value={getData.assortNm != '' ? getData.assortNm : undefined}
-                                onInput={handlechangeInput}
-                            />
-                        </Col>
-                    </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                구매처
-                            </Text>
-                        </Col>
-                        <Col span={6}>
-                            <Select
-                                placeholder='구매처선택'
-                                className='fullWidth'
-                                defaultValue={getData.channelId != '' ? getData.channelId : ''}
-                                name='selectVendor'
-                                onChange={handleChangeOption}>
-                                <Option key='00'>선택</Option>
-                                {purchaseVendorList.map(item => (
-                                    <Option key={item.value}>{item.label}</Option>
-                                ))}
-                            </Select>
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
-
-            <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
-                        enableCellTextSelection={true}
-                        rowData={state.rowData}
-                        suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
-                        // rowSelection={'multiple'}
-                        onFirstDataRendered={onFirstDataRendered}
-                        columnDefs={state.columnDefs}
-                        onRowClicked={goDetail}
-                        onGridReady={onGridReady}></AgGridReact>
                 </div>
-            </Row>
+                <Row className='marginTop-10'>
+                    <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
+                            enableCellTextSelection={true}
+                            rowData={state.rowData}
+                            suppressDragLeaveHidesColumns={true}
+                            // rowSelection={'multiple'}
+                            onFirstDataRendered={onFirstDataRendered}
+                            onBodyScroll={onFirstDataRendered}
+                            columnDefs={state.columnDefs}
+                            onRowClicked={goDetail}
+                            onGridReady={onGridReady}></AgGridReact>
+                    </div>
+                </Row>
+            </div>
         </>
     )
 }

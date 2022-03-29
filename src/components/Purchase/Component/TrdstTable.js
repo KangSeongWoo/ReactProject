@@ -12,7 +12,8 @@ const TrdstTable = ({
     saveOrderList,
     setSaveOrderList,
     stateRowkey,
-    setStateRowkey
+    setStateRowkey,
+    style
 }) => {
     const columnsList = columns
 
@@ -213,7 +214,7 @@ const TrdstTable = ({
     }
 
     return (
-        <div className='ant-table-wrapper' style={{ maxHeight: '500px', overflowX: 'scroll', overflowY: 'scroll' }}>
+        <div className='ant-table-wrapper' style={style}>
             <table
                 className='NanumGothic-Regular'
                 style={{

@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback, useEffect } from 'react'
+import React, { useState, useLayoutEffect, useCallback, useEffect , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
 import { Row, Col, Button, Typography, DatePicker, Modal, Select, Divider, Input } from 'antd'
@@ -49,6 +49,7 @@ const PurchaseSearchM = props => {
     // 화면 상태에 관련 한 state
     const [state, setState] = useState({
         loading: false,
+        height:400,
         rowData: []
     })
 
@@ -59,7 +60,7 @@ const PurchaseSearchM = props => {
                 headerName: '발주번호',
                 editable: false,
                 suppressMenu: true,
-                headerCheckboxSelection: true,
+                headerCheckboxSelection: false,
                 headerCheckboxSelectionFilteredOnly: true,
                 checkboxSelection: true
             },
@@ -153,6 +154,8 @@ const PurchaseSearchM = props => {
     }, [isModalVisible])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -315,6 +318,13 @@ const PurchaseSearchM = props => {
         params.columnApi.autoSizeColumns(allColumnIds, true)
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <>
             <Modal
@@ -325,6 +335,8 @@ const PurchaseSearchM = props => {
                 onCancel={handleCancel}
                 width={'70%'}
                 footer={[<></>]}>
+                <div className='notice-wrapper'>
+                <div className='notice-condition'>
                 <Row type='flex' justify='end' gutter={[16, 8]}>
                     <Col style={{ width: '150px' }}>
                         <Button type='primary' className='fullWidth searchPop' onClick={checkTheValue} ghost>
@@ -397,20 +409,21 @@ const PurchaseSearchM = props => {
                         />
                     </Col>
                 </Row>
-                <Row className='marginTop-10'>
-                    <div className='ag-theme-alpine' style={{ height: 400, width: '100%' }}>
-                        <AgGridReact
-                            enableCellTextSelection={true}
-                            suppressDragLeaveHidesColumns={true}
-                            rowData={state.rowData}
-                            defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
-                            suppressRowClickSelection={true}
-                            columnDefs={columnDefs()}
-                            rowSelection={'single'}
-                            onFirstDataRendered={onFirstDataRendered}
-                            onGridReady={onGridReady}></AgGridReact>
-                    </div>
-                </Row>
+                </div>
+                    <Row className='marginTop-10'>
+                        <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                            <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
+                                enableCellTextSelection={true}
+                                suppressDragLeaveHidesColumns={true}
+                                rowData={state.rowData}
+                                suppressRowClickSelection={true}
+                                columnDefs={columnDefs()}
+                                rowSelection={'single'}
+                                onFirstDataRendered={onFirstDataRendered}
+                                onGridReady={onGridReady}></AgGridReact>
+                        </div>
+                    </Row>
+                </div>
             </Modal>
         </>
     )

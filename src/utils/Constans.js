@@ -1,5 +1,3 @@
-import React from 'react'
-
 export const ORIGINS = [
     { label: '가나', value: 'GH' },
     { label: '가봉', value: 'GA' },
@@ -472,4 +470,41 @@ export const PROCESSSTATUS = [
         label: '처리완료',
         value: '02'
     }
+]
+
+export const CONTAINERKD = [
+    {
+        label: '20FT',
+        value: '20FT'
+    },
+    {
+        label: '40FT',
+        value: '40FT'
+    }
+]
+
+export const INVENGB = [
+    {
+        label: '기타입고',
+        value: '11'
+    },
+    {
+        label: '기타출고',
+        value: '21'
+    }
+]
+
+export const STATUSGOODS = [
+    {
+        label: '정상품',
+        value: '11'
+    },
+    {
+        label: '중품',
+        value: '21'
+    },
+    {
+        label: '하품',
+        value: '22'
+    },
 ]

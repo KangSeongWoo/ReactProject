@@ -5,13 +5,17 @@ import List from '../../../components/Order/OrderList/List'
 const mapDispatchToProps = dispatch => ({
     setSpin: isSpin => {
         dispatch(actions.spin(isSpin))
+    },
+    setHeight: () => {
+        dispatch(actions.setHeight())
     }
 })
 
 function mapReduxStateToReactProps(state) {
     return {
         userId: state.user.userId,
-        spin: state.webState.spin
+        spin: state.webState.spin,
+        height : state.webState.height
     }
 }
 export default connect(mapReduxStateToReactProps, mapDispatchToProps)(List)

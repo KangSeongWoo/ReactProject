@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useEffect, useCallback } from 'react'
+import React, { useLayoutEffect, useState, useEffect, useCallback , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { AgGridReact } from 'ag-grid-react'
@@ -169,6 +169,8 @@ const List = props => {
 
     // 화면 진입시 랜더링 하기 전에
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -290,12 +292,27 @@ const List = props => {
             startDt: value
         })
     }
+
+    const defaultColDef = useMemo(() => {
+        return {
+            editable: false,
+            enableRowGroup: true,
+            enablePivot: true,
+            enableValue: true,
+            sortable: true,
+            resizable: true,
+            filter: true,
+            minWidth: 50
+        };
+    }, []);
+
     return (
         <Layout>
             <div className='notice-header'>
                 <CustomBreadcrumb arr={['발주', '발주리스트']}></CustomBreadcrumb>
             </div>
             <div className='notice-wrapper'>
+            <div className='notice-condition'>
                 <Row gutter={16}>
                     <Row gutter={16} className='onVerticalCenter marginTop-10'>
                         <Col span={2}>
@@ -490,10 +507,10 @@ const List = props => {
                         </Col>
                     </Row>
                 </Row>
-
+</div>
                 <div style={{ marginTop: '4px' }}>
-                    <div className='ag-theme-alpine' style={{ height: state.height, width: '100%' }}>
-                        <AgGridReact
+                    <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                             className='marginTop-15'
                             onFirstDataRendered={onFirstDataRendered}
                             onBodyScroll={onFirstDataRendered}
@@ -502,16 +519,6 @@ const List = props => {
                             rowData={state.rowData}
                             ensureDomOrder={true}
                             enableCellTextSelection={true}
-                            defaultColDef={{
-                                editable: false,
-                                enableRowGroup: true,
-                                enablePivot: true,
-                                enableValue: true,
-                                sortable: true,
-                                resizable: true,
-                                filter: true,
-                                minWidth: 50
-                            }}
                             frameworkComponents={state.frameworkComponents}
                             columnTypes={state.columnTypes}
                             rowSelection={state.rowSelection}

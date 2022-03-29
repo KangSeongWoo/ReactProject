@@ -3,7 +3,7 @@ import instance from './index'
 const baseUrl = process.env.REACT_APP_API_URL
 
 class Https {
-   // 로그인
+    // 로그인
     login = params => instance.post(baseUrl + '/users/login', params)
 
     // 카테고리 리스트 조회
@@ -87,7 +87,7 @@ class Https {
     getOrderListByProducts = param => instance.get(baseUrl + '/order/goods/items', { params: param })
 
     //상품 - 재고리스트 조회
-    getStockList = param => instance.get(baseUrl + '/goods/stock/items', { params: param })
+    getStockList = param => instance.get(baseUrl + '/goods/stock/storage/' + param.get("storageId"), { params: param })
 
     //입고처리 메뉴 -> 조회버튼
     getPurchaseOneByPurchaseNo = params => instance.get(baseUrl + '/deposit/indicate/' + params.purchaseNo)
@@ -172,9 +172,36 @@ class Https {
 
     //주문 -> 주문취소
     postCancelOrder = (params, config) => instance.post(baseUrl + '/order/items/cancel', params, config)
-    
+
     //이동리스트 엑셀 업로드 내용 DB 저장
     uploadExcelDB = (params, config) => instance.post(baseUrl + '/move/excel', params, config)
+    
+    //기타입고
+    postSaveDepositEtc = (params, config) => instance.post(baseUrl + '/deposit/etc', params, config)
+    
+    //기타출고
+    postOrderReleaseEtc = (params, config) => instance.post(baseUrl + '/ship/etc', params, config)
+    
+    //기타입고리스트
+    getDepositListEtc = param => instance.get(baseUrl + '/deposit/etc/items', { params: param })
+        
+    //가타출고리스트
+    getReleaseListEtc = param => instance.get(baseUrl + '/ship/etc/items', { params: param })
+    
+    //기타입고 단건
+    getDepositOneEtc = params => instance.get(baseUrl + '/deposit/etc/items/' + params.depositNo)
+    
+    //기타출고 단건
+    getReleasOneEtc = params => instance.get(baseUrl + '/ship/etc/items/' + params.depositNo)
+    
+    //미발주내역조회
+    getListBeforeOrder = param => instance.get(baseUrl + '/order/waitStatus/items', { params: param })
+    
+    //관리상품주문리스트
+    getSelectiveList = param => instance.get(baseUrl + '/order/goods/special-items', { params: param })
+    
+    //상품정보 단건 변경
+    postProductInfoUpdate = param => instance.get(baseUrl + '/goods/change/vendor', { params: param })
 }
 
 export default new Https()

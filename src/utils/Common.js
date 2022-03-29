@@ -26,7 +26,9 @@ export const extend = (json1, json2) => {
 
 //금액 포맷
 export const fommatMoney = obj => {
-    return obj.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',')
+    const parts = number.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
 }
 
 // Notification
@@ -166,4 +168,8 @@ export const getCellNum = (num, count) => {
     let number = Number(num) + count
 
     return number
+}
+
+export const isMobile = () => {
+    return window.innerWidth < 450 ? true : false
 }

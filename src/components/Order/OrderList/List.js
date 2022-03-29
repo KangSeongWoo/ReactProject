@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useCallback } from 'react'
+import React, { useLayoutEffect, useState, useCallback , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { Input, Row, Col, DatePicker, Button, Typography, Select, Divider } from 'antd'
 import '/src/style/custom.css'
@@ -52,6 +52,8 @@ const List = props => {
     }, [])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setView()
     }, [])
@@ -350,9 +352,18 @@ const List = props => {
         props.setSpin(false)
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
-        <div className='notice-wrapper'>
+        <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['주문', '주문별주문리스트']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={16}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth' onClick={exportExcel} ghost>
@@ -497,23 +508,23 @@ const List = props => {
                     </Row>
                 </Col>
             </Row>
-
+</div>
             <div className='clearfix'></div>
             <p></p>
             <div className='notice-list'>
-                <div className='ag-theme-alpine' style={{ width: '100%', height: 600 }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ width: '100%', height: props.height }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         onRowDoubleClicked={goDetail}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         rowData={state.orders}
                         onFirstDataRendered={onFirstDataRendered}
                         columnDefs={columnDefs()}
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </div>
-        </div>
+            </div>
+        </>
     )
 }
 

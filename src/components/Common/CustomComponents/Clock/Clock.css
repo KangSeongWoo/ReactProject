@@ -1,0 +1,17 @@
+#clock{
+	font-family : Roboto;
+	display :flex;
+	align-items :center;
+	justify-content :center;
+	color :#fff;
+	transition :.5s;
+	flex-wrap: wrap;
+}
+#clock *{
+		cursor :pointer;
+		transition :.2s;
+		margin-bottom: 0px;
+}
+
+
+	

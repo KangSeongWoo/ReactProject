@@ -1,4 +1,4 @@
-import React, { useMemo, useMemouseEffect, useLayoutEffect, useState } from 'react'
+import React, { useMemo, useMemouseEffect, useLayoutEffect, useState ,useEffect} from 'react'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { Layout, Input, Select, Row, Col, Button, DatePicker, Spin, message, Typography } from 'antd'
@@ -30,6 +30,8 @@ const Edit = props => {
     const [isModalVisible, setIsModalVisible] = useState(false)
     const [gridApi, setGridApi] = useState(null)
     const [gridColumnApi, setGridColumnApi] = useState(null)
+    const [selectedRows, setSelectedRows] = useState(0);
+
     const [state, setState] = useState({
         purchaseId: '',
         purchaseDt: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -90,6 +92,28 @@ const Edit = props => {
             { headerName: '옵션2', field: 'optionNm2' },
             { headerName: '옵션3', field: 'optionNm3' },
             { headerName: '원산지', field: 'origin' },
+            {
+                headerName: '제작완료일자',
+                field: 'compleDt',
+                editable: true,
+                suppressMenu: true,
+                cellStyle: { backgroundColor: '#DAF7A6' },
+                valueFormatter: function(params) {
+                    let reg = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi
+                    if (Common.trim(params.data.compleDt) != '') {
+                        return params.data.compleDt.replace(reg, '').replace(/([0-9]{4})([0-9]{2})([0-9]+)/, '$1-$2-$3')
+                    } else {
+                        return params.data.compleDt
+                    }
+                },
+                valueParser: function(params) {
+                    if (params.newValue.length == 8) {
+                        return params.newValue.replace(/([0-9]{4})([0-9]{2})([0-9]+)/, '$1-$2-$3')
+                    } else {
+                        return params.data.compleDt
+                    }
+                }
+            },
             { headerName: '카테고리', field: 'custCategory' },
             { headerName: '재질', field: 'material' },
             { headerName: '발주수량', field: 'purchaseQty' },
@@ -108,6 +132,8 @@ const Edit = props => {
 
     // 화면 랜더링 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -161,6 +187,7 @@ const Edit = props => {
                 dealtypeCd: Common.trim(res.data.data.dealtypeCd),
                 purchaseStatus: Common.trim(res.data.data.purchaseStatus),
                 deliFee: Common.trim(res.data.data.deliFee),
+                height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100,
                 items: res.data.data.items
             })
         } catch (error) {
@@ -258,6 +285,7 @@ const Edit = props => {
                 purchaseUnitAmt: parseFloat(Common.trim(item.purchaseUnitAmt)),
                 purchaseId: Common.trim(item.purchaseId),
                 purchaseSeq: Common.trim(item.purchaseSeq),
+                compleDt: Common.trim(item.compleDt),
                 itemGrade: '11'
             }
 
@@ -360,6 +388,7 @@ const Edit = props => {
 
         params.printDt = moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
         params.purchaseNo = state.purchaseId
+        params.userId = userId
 
         console.log('Params : ' + JSON.stringify(params))
 
@@ -843,38 +872,39 @@ const Edit = props => {
                 value:
                     '151, Teheran-ro, Gangnam-gu, Seoul,\r\nRepublic of Korea Zip Code : 06132\r\nE-mail : ryanyoon@trdst.com\r\nTel : (+82) 10 9533 6306'
             },
-            { cellNm: 'E2', value: 'Order Date.' },
-            { cellNm: 'F2', value: Common.trim(state.purchaseDt) },
-            { cellNm: 'H2', value: 'Company' },
-            { cellNm: 'I2', value: Common.trim(vendorNm) },
-            { cellNm: 'E3', value: 'Order No.' },
-            { cellNm: 'F3', value: Common.trim(state.siteOrderNo) },
-            { cellNm: 'H3', value: 'Sales Term' },
-            { cellNm: 'I3', value: 'EXW' },
-            { cellNm: 'E4', value: 'Payment\r\nTerms' },
-            { cellNm: 'E6', value: 'Delivery' },
-            { cellNm: 'E7', value: 'Carrier' },
-            { cellNm: 'F4', value: '50% DEPOSIT AGAINST ORDER CONFIRMATION\r\n& 50% BALANCE BEFORE SHIPMENT' },
-            { cellNm: 'F6', value: 'AS SOON AS POSSIBLE' },
-            { cellNm: 'F7', value: 'TO BE NOMINATED BEFORE SHIPMENT' },
+            { cellNm: 'F2', value: 'Order Date.' },
+            { cellNm: 'G2', value: Common.trim(state.purchaseDt) },
+            { cellNm: 'I2', value: 'Company' },
+            { cellNm: 'J2', value: Common.trim(vendorNm) },
+            { cellNm: 'F3', value: 'Order No.' },
+            { cellNm: 'G3', value: Common.trim(state.siteOrderNo) },
+            { cellNm: 'I3', value: 'Sales Term' },
+            { cellNm: 'J3', value: 'EXW' },
+            { cellNm: 'F4', value: 'Payment\r\nTerms' },
+            { cellNm: 'F6', value: 'Delivery' },
+            { cellNm: 'F7', value: 'Carrier' },
+            { cellNm: 'G4', value: '50% DEPOSIT AGAINST ORDER CONFIRMATION\r\n& 50% BALANCE BEFORE SHIPMENT' },
+            { cellNm: 'G6', value: 'AS SOON AS POSSIBLE' },
+            { cellNm: 'G7', value: 'TO BE NOMINATED BEFORE SHIPMENT' },
             { cellNm: 'A8', value: 'PURCHASE ORDER' },
             { cellNm: 'A10', value: 'NO.' },
             { cellNm: 'B10', value: 'Brand' },
-            { cellNm: 'C10', value: 'Model No' },
-            { cellNm: 'D10', value: 'Description' },
-            { cellNm: 'E10', value: 'Color' },
-            { cellNm: 'F10', value: 'Qty' },
-            { cellNm: 'G10', value: 'RRP' },
-            { cellNm: 'H10', value: 'Discount' },
-            { cellNm: 'I10', value: 'Total' },
-            { cellNm: 'J10', value: 'Name' },
+            { cellNm: 'C10', value: 'Image' },
+            { cellNm: 'D10', value: 'Model No' },
+            { cellNm: 'E10', value: 'Description' },
+            { cellNm: 'F10', value: 'Color' },
+            { cellNm: 'G10', value: 'Qty' },
+            { cellNm: 'H10', value: 'RRP' },
+            { cellNm: 'I10', value: 'Discount' },
+            { cellNm: 'J10', value: 'Total' },
+            { cellNm: 'K10', value: 'Name' },
             { cellNm: 'A' + Common.getCellNum(10, count), value: 'Total' },
             {
                 cellNm: 'A' + Common.getCellNum(12, count),
                 value: '※ PLEASE SPECIFY THE COUNTRY OF ORIGIN PER ITEM ON THE COMMERCIAL INVOICE FOR THE SHIPMENT.'
             },
-            { cellNm: 'F' + Common.getCellNum(10, count), value: totalAmount },
-            { cellNm: 'I' + Common.getCellNum(10, count), value: '€ ' + Number(totalPrice).toFixed(2) }
+            { cellNm: 'G' + Common.getCellNum(10, count), value: totalAmount },
+            { cellNm: 'J' + Common.getCellNum(10, count), value: '€ ' + Number(totalPrice).toFixed(2) }
         ]
 
         props.setSpin(true)
@@ -885,85 +915,86 @@ const Edit = props => {
         // 각각의 컬럼 너비 조절
         worksheet.getColumn(1).width = 4
         worksheet.getColumn(2).width = 7.5
-        worksheet.getColumn(3).width = 9
-        worksheet.getColumn(4).width = 60
-        worksheet.getColumn(5).width = 9
-        worksheet.getColumn(6).width = 6.5
+        worksheet.getColumn(3).width = 13
+        worksheet.getColumn(4).width = 9
+        worksheet.getColumn(5).width = 60
+        worksheet.getColumn(6).width = 9
         worksheet.getColumn(7).width = 6.5
-        worksheet.getColumn(8).width = 8
-        worksheet.getColumn(9).width = 6.5
+        worksheet.getColumn(8).width = 6.5
+        worksheet.getColumn(9).width = 8
         worksheet.getColumn(10).width = 6.5
+        worksheet.getColumn(11).width = 6.5
 
         // 셀병합이 필요한 셀 병합
         // 셀병합 데이터
         let mergeCellArray = [
             'A4:C7',
-            'I2:J2',
-            'I3:J3',
-            'F2:G2',
-            'F3:G3',
-            'F4:J5',
-            'F6:J6',
-            'F7:J7',
-            'A8:J9',
-            'E4:E5',
-            'A' + Common.getCellNum(10, count) + ':E' + Common.getCellNum(10, count)
+            'J2:K2',
+            'J3:K3',
+            'G2:H2',
+            'G3:H3',
+            'G4:K5',
+            'G6:K6',
+            'G7:K7',
+            'A8:K9',
+            'F4:F5',
+            'A' + Common.getCellNum(10, count) + ':F' + Common.getCellNum(10, count)
         ]
 
         // border 설정을 위해 Json 합쳐 주는 함수
         Common.setProps(
             worksheet,
             [
-                'A10:J10',
-                'A11:J11',
-                'E2:J7',
-                'A' + Common.getCellNum(10, count) + ':J' + Common.getCellNum(10, count),
-                'A' + Common.getCellNum(11, count) + ':J' + Common.getCellNum(11, count)
+                'A10:K10',
+                'A11:K11',
+                'F2:K7',
+                'A' + Common.getCellNum(10, count) + ':K' + Common.getCellNum(10, count),
+                'A' + Common.getCellNum(11, count) + ':K' + Common.getCellNum(11, count)
             ],
             'border',
             { top: { style: 'thin' } }
         )
-        Common.setProps(worksheet, ['E2:J7', 'A10:J10', 'A10:J' + Common.getCellNum(10, count)], 'border', {
+        Common.setProps(worksheet, ['F2:K7', 'A10:K10', 'A10:K' + Common.getCellNum(10, count)], 'border', {
             left: { style: 'thin' }
         })
-        Common.setProps(worksheet, ['I2:I3', 'F4:F7', 'J10:J' + Common.getCellNum(10, count)], 'border', {
+        Common.setProps(worksheet, ['J2:J3', 'G4:G7', 'K10:K' + Common.getCellNum(10, count)], 'border', {
             right: { style: 'thin' }
         })
-        Common.setProps(worksheet, ['E7:F7'], 'border', { bottom: { style: 'thin' } })
+        Common.setProps(worksheet, ['F7:G7'], 'border', { bottom: { style: 'thin' } })
 
         // 폰트 관련
-        Common.setProps(worksheet, ['A4', 'E2:J7', 'A28', 'A' + Common.getCellNum(12, count)], 'font', {
+        Common.setProps(worksheet, ['A4', 'F2:K7', 'A28', 'A' + Common.getCellNum(12, count)], 'font', {
             name: '맑은 고딕',
             size: 8
         })
         Common.setProps(worksheet, 'A10:J10', 'font', { name: '맑은 고딕', size: 9 })
         Common.setProps(worksheet, 'A8', 'font', { name: '맑은 고딕', size: 20 })
-        Common.setProps(worksheet, ['E2:E7', 'H2:H3', 'A10:J10', 'A' + Common.getCellNum(10, count), 'A8'], 'font', {
+        Common.setProps(worksheet, ['F2:F7', 'I2:I3', 'A10:K10', 'A' + Common.getCellNum(10, count), 'A8'], 'font', {
             bold: true
         })
         Common.setProps(worksheet, 'A' + Common.getCellNum(12, count), 'font', { color: '#FF0000' })
 
         if (list.length > 0) {
-            Common.setProps(worksheet, 'A11:J' + Common.getCellNum(10, count), 'font', { name: '맑은 고딕', size: 8 })
+            Common.setProps(worksheet, 'A11:K' + Common.getCellNum(10, count), 'font', { name: '맑은 고딕', size: 8 })
         }
 
         // BACKGROUND 처리
         Common.setProps(worksheet, 'A11', 'fill', { type: 'pattern', pattern: 'solid', fgColor: { rgba: '#E2EFDA' } })
 
         // 정렬
-        Common.setProps(worksheet, ['F4:J7'], 'alignment', { vertical: 'middle', horizontal: 'left' })
-        Common.setProps(worksheet, ['I11:F' + Common.getCellNum(10, count)], 'alignment', {
+        Common.setProps(worksheet, ['G4:K7'], 'alignment', { vertical: 'middle', horizontal: 'left' })
+        Common.setProps(worksheet, ['J11:G' + Common.getCellNum(10, count)], 'alignment', {
             vertical: 'middle',
             horizontal: 'right'
         })
         Common.setProps(
             worksheet,
-            ['A4', 'A8', 'E2:E7', 'F2:F3', 'A10:J10', 'A' + Common.getCellNum(10, count)],
+            ['A4', 'A8', 'F2:F7', 'G2:G3', 'A10:K'+ Common.getCellNum(10, count), 'A' + Common.getCellNum(10, count)],
             'alignment',
             { vertical: 'middle', horizontal: 'center' }
         )
 
-        Common.setProps(worksheet, ['A4', 'E4', 'F4'], 'alignment', { wrapText: true })
+        Common.setProps(worksheet, ['A4', 'F4', 'G4'], 'alignment', { wrapText: true })
 
         let purchases = []
 
@@ -971,24 +1002,26 @@ const Edit = props => {
             purchases.push({ cellNm: 'A' + String(10 + Number(index + 1)), value: index + 1 })
             purchases.push({ cellNm: 'B' + String(10 + Number(index + 1)), value: row.brandNm })
 
-            purchases.push({ cellNm: 'C' + String(10 + Number(index + 1)), value: row.origin })
-            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.custCategory })
-            purchases.push({ cellNm: 'E' + String(10 + Number(index + 1)), value: row.material })
+            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.origin })
+            purchases.push({ cellNm: 'E' + String(10 + Number(index + 1)), value: row.custCategory })
+            purchases.push({ cellNm: 'F' + String(10 + Number(index + 1)), value: row.material })
 
-            purchases.push({ cellNm: 'C' + String(10 + Number(index + 1)), value: row.modelNo })
-            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.assortNm })
+            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.modelNo })
+            purchases.push({ cellNm: 'E' + String(10 + Number(index + 1)), value: row.assortNm })
             purchases.push({
-                cellNm: 'E' + String(10 + Number(index + 1)),
+                cellNm: 'F' + String(10 + Number(index + 1)),
                 value: row.optionNm1 + row.optionNm2 + row.optionNm3
             })
-            purchases.push({ cellNm: 'F' + String(10 + Number(index + 1)), value: row.purchaseQty })
-            purchases.push({ cellNm: 'G' + String(10 + Number(index + 1)), value: '€ ' + row.mdRrp })
-            purchases.push({ cellNm: 'H' + String(10 + Number(index + 1)), value: row.buySupplyDiscount + ' %' })
+            purchases.push({ cellNm: 'G' + String(10 + Number(index + 1)), value: row.purchaseQty })
+            purchases.push({ cellNm: 'H' + String(10 + Number(index + 1)), value: '€ ' + row.mdRrp })
+            purchases.push({ cellNm: 'I' + String(10 + Number(index + 1)), value: row.buySupplyDiscount + ' %' })
             purchases.push({
-                cellNm: 'I' + String(10 + Number(index + 1)),
+                cellNm: 'J' + String(10 + Number(index + 1)),
                 value: String('€ ' + Number(row.purchaseQty * row.mdRrp * (1 - row.buySupplyDiscount / 100)).toFixed(2))
             })
-            purchases.push({ cellNm: 'J' + String(10 + Number(index + 1)), value: row.custNm })
+            purchases.push({ cellNm: 'K' + String(10 + Number(index + 1)), value: row.custNm })
+            
+            worksheet.getRow(10 + Number(index + 1)).height = 90
         })
         
         const imageBuffer = await axios.get(LogoImage.default, { responseType: 'arraybuffer' })
@@ -1003,6 +1036,35 @@ const Edit = props => {
             tl: { col: 0.8, row: 0.6 },
             br: { col: 2.4, row: 2.3 }
         })
+        
+        
+        let imageData = [];
+
+        for (let index = 0; index < list.length; index++) {
+            let row2 = list[index]
+
+            imageData.push(row2.imgServerUrl + row2.imagePath)
+        }
+
+        console.log('imageData : ' + imageData);
+
+        let params = {};
+        let response = null
+        let image = null;
+        
+        params.urls = imageData
+
+        response = await axios.post(process.env.REACT_APP_API_URL + '/file/godoImages', params)
+
+        for (let index = 0; index < response.data.images.length; index++) {
+            if (response.data.images[index] != '') {
+                image = workbook.addImage({
+                    base64: response.data.images[index],
+                    extension: 'jpeg'
+                })
+                worksheet.addImage(image, 'C'  + String(10 + Number(index + 1)) + ':C' + String(10 + Number(index + 1)))
+            }
+        }
 
         excelJson = excelJson.concat(purchases)
 
@@ -1050,38 +1112,39 @@ const Edit = props => {
                 value:
                     'Am Kronberger Hang 2\r\n65823 Schwalbach am taunus\r\nE-mail : buyer@high-home.com\r\nTel : (+49) 1525 2853375'
             },
-            { cellNm: 'E2', value: 'Order Date.' },
-            { cellNm: 'F2', value: Common.trim(state.purchaseDt) },
-            { cellNm: 'H2', value: 'Company' },
-            { cellNm: 'I2', value: Common.trim(vendorNm) },
-            { cellNm: 'E3', value: 'Order No.' },
-            { cellNm: 'F3', value: Common.trim(state.siteOrderNo) },
-            { cellNm: 'H3', value: 'Sales Term' },
-            { cellNm: 'I3', value: 'EXW' },
-            { cellNm: 'E4', value: 'Payment\r\nTerms' },
-            { cellNm: 'E6', value: 'Delivery' },
-            { cellNm: 'E7', value: 'Carrier' },
-            { cellNm: 'F4', value: '50% DEPOSIT AGAINST ORDER CONFIRMATION\r\n& 50% BALANCE BEFORE SHIPMENT' },
-            { cellNm: 'F6', value: 'AS SOON AS POSSIBLE' },
-            { cellNm: 'F7', value: 'TO BE NOMINATED BEFORE SHIPMENT' },
+            { cellNm: 'F2', value: 'Order Date.' },
+            { cellNm: 'G2', value: Common.trim(state.purchaseDt) },
+            { cellNm: 'I2', value: 'Company' },
+            { cellNm: 'J2', value: Common.trim(vendorNm) },
+            { cellNm: 'F3', value: 'Order No.' },
+            { cellNm: 'G3', value: Common.trim(state.siteOrderNo) },
+            { cellNm: 'I3', value: 'Sales Term' },
+            { cellNm: 'J3', value: 'EXW' },
+            { cellNm: 'F4', value: 'Payment\r\nTerms' },
+            { cellNm: 'F6', value: 'Delivery' },
+            { cellNm: 'F7', value: 'Carrier' },
+            { cellNm: 'G4', value: '50% DEPOSIT AGAINST ORDER CONFIRMATION\r\n& 50% BALANCE BEFORE SHIPMENT' },
+            { cellNm: 'G6', value: 'AS SOON AS POSSIBLE' },
+            { cellNm: 'G7', value: 'TO BE NOMINATED BEFORE SHIPMENT' },
             { cellNm: 'A8', value: 'PURCHASE ORDER' },
             { cellNm: 'A10', value: 'NO.' },
             { cellNm: 'B10', value: 'Brand' },
-            { cellNm: 'C10', value: 'Model No' },
-            { cellNm: 'D10', value: 'Description' },
-            { cellNm: 'E10', value: 'Color' },
-            { cellNm: 'F10', value: 'Qty' },
-            { cellNm: 'G10', value: 'RRP' },
-            { cellNm: 'H10', value: 'Discount' },
-            { cellNm: 'I10', value: 'Total' },
-            { cellNm: 'J10', value: 'Name' },
+            { cellNm: 'C10', value: 'Image' },
+            { cellNm: 'D10', value: 'Model No' },
+            { cellNm: 'E10', value: 'Description' },
+            { cellNm: 'F10', value: 'Color' },
+            { cellNm: 'G10', value: 'Qty' },
+            { cellNm: 'H10', value: 'RRP' },
+            { cellNm: 'I10', value: 'Discount' },
+            { cellNm: 'J10', value: 'Total' },
+            { cellNm: 'K10', value: 'Name' },
             { cellNm: 'A' + Common.getCellNum(10, count), value: 'Total' },
             {
                 cellNm: 'A' + Common.getCellNum(12, count),
                 value: '※ PLEASE SPECIFY THE COUNTRY OF ORIGIN PER ITEM ON THE COMMERCIAL INVOICE FOR THE SHIPMENT.'
             },
-            { cellNm: 'F' + Common.getCellNum(10, count), value: totalAmount },
-            { cellNm: 'I' + Common.getCellNum(10, count), value: '€ ' + Number(totalPrice).toFixed(2) }
+            { cellNm: 'G' + Common.getCellNum(10, count), value: totalAmount },
+            { cellNm: 'J' + Common.getCellNum(10, count), value: '€ ' + Number(totalPrice).toFixed(2) }
         ]
 
         props.setSpin(true)
@@ -1092,86 +1155,87 @@ const Edit = props => {
         // 각각의 컬럼 너비 조절
         worksheet.getColumn(1).width = 4
         worksheet.getColumn(2).width = 7.5
-        worksheet.getColumn(3).width = 9
-        worksheet.getColumn(4).width = 60
-        worksheet.getColumn(5).width = 9
-        worksheet.getColumn(6).width = 6.5
+        worksheet.getColumn(3).width = 13
+        worksheet.getColumn(4).width = 9
+        worksheet.getColumn(5).width = 60
+        worksheet.getColumn(6).width = 9
         worksheet.getColumn(7).width = 6.5
-        worksheet.getColumn(8).width = 8
-        worksheet.getColumn(9).width = 6.5
+        worksheet.getColumn(8).width = 6.5
+        worksheet.getColumn(9).width = 8
         worksheet.getColumn(10).width = 6.5
+        worksheet.getColumn(11).width = 6.5
 
         // 셀병합이 필요한 셀 병합
         // 셀병합 데이터
         let mergeCellArray = [
             'A1:C3',
             'A4:C7',
-            'I2:J2',
-            'I3:J3',
-            'F2:G2',
-            'F3:G3',
-            'F4:J5',
-            'F6:J6',
-            'F7:J7',
-            'A8:J9',
-            'E4:E5',
-            'A' + Common.getCellNum(10, count) + ':E' + Common.getCellNum(10, count)
+            'J2:K2',
+            'J3:K3',
+            'G2:H2',
+            'G3:H3',
+            'G4:K5',
+            'G6:K6',
+            'G7:K7',
+            'A8:K9',
+            'F4:F5',
+            'A' + Common.getCellNum(10, count) + ':F' + Common.getCellNum(10, count)
         ]
 
         // border 설정을 위해 Json 합쳐 주는 함수
         Common.setProps(
             worksheet,
             [
-                'A10:J10',
-                'A11:J11',
-                'E2:J7',
-                'A' + Common.getCellNum(10, count) + ':J' + Common.getCellNum(10, count),
-                'A' + Common.getCellNum(11, count) + ':J' + Common.getCellNum(11, count)
+                'A10:K10',
+                'A11:K11',
+                'F2:K7',
+                'A' + Common.getCellNum(10, count) + ':K' + Common.getCellNum(10, count),
+                'A' + Common.getCellNum(11, count) + ':K' + Common.getCellNum(11, count)
             ],
             'border',
             { top: { style: 'thin' } }
         )
-        Common.setProps(worksheet, ['E2:J7', 'A10:J10', 'A10:J' + Common.getCellNum(10, count)], 'border', {
+        Common.setProps(worksheet, ['F2:K7', 'A10:K10', 'A10:K' + Common.getCellNum(10, count)], 'border', {
             left: { style: 'thin' }
         })
-        Common.setProps(worksheet, ['I2:I3', 'F4:F7', 'J10:J' + Common.getCellNum(10, count)], 'border', {
+        Common.setProps(worksheet, ['J2:J3', 'G4:G7', 'K10:K' + Common.getCellNum(10, count)], 'border', {
             right: { style: 'thin' }
         })
-        Common.setProps(worksheet, ['E7:F7'], 'border', { bottom: { style: 'thin' } })
+        Common.setProps(worksheet, ['F7:G7'], 'border', { bottom: { style: 'thin' } })
 
         // 폰트 관련
-        Common.setProps(worksheet, ['A4', 'E2:J7', 'A28', 'A' + Common.getCellNum(12, count)], 'font', {
+        Common.setProps(worksheet, ['A4', 'F2:K7', 'A28', 'A' + Common.getCellNum(12, count)], 'font', {
             name: '맑은 고딕',
             size: 8
         })
         Common.setProps(worksheet, 'A10:J10', 'font', { name: '맑은 고딕', size: 9 })
         Common.setProps(worksheet, 'A8', 'font', { name: '맑은 고딕', size: 20 })
-        Common.setProps(worksheet, ['E2:E7', 'H2:H3', 'A10:J10', 'A' + Common.getCellNum(10, count), 'A8'], 'font', {
+        Common.setProps(worksheet, ['F2:F7', 'I2:I3', 'A10:K10', 'A' + Common.getCellNum(10, count), 'A8'], 'font', {
             bold: true
         })
         Common.setProps(worksheet, 'A' + Common.getCellNum(12, count), 'font', { color: '#FF0000' })
 
         if (list.length > 0) {
-            Common.setProps(worksheet, 'A11:J' + Common.getCellNum(10, count), 'font', { name: '맑은 고딕', size: 8 })
+            Common.setProps(worksheet, 'A11:K' + Common.getCellNum(10, count), 'font', { name: '맑은 고딕', size: 8 })
         }
 
         // BACKGROUND 처리
         Common.setProps(worksheet, 'A11', 'fill', { type: 'pattern', pattern: 'solid', fgColor: { rgba: '#E2EFDA' } })
 
         // 정렬
-        Common.setProps(worksheet, ['F4:J7'], 'alignment', { vertical: 'middle', horizontal: 'left' })
-        Common.setProps(worksheet, ['I11:F' + Common.getCellNum(10, count)], 'alignment', {
+        Common.setProps(worksheet, ['G4:K7'], 'alignment', { vertical: 'middle', horizontal: 'left' })
+        Common.setProps(worksheet, ['J11:G' + Common.getCellNum(10, count)], 'alignment', {
             vertical: 'middle',
             horizontal: 'right'
         })
         Common.setProps(
             worksheet,
-            ['A1', 'A4', 'A8', 'E2:E7', 'F2:F3', 'A10:J10', 'A' + Common.getCellNum(10, count)],
+            ['A1','A4', 'A8', 'F2:F7', 'G2:G3', 'A10:K'+ Common.getCellNum(10, count), 'A' + Common.getCellNum(10, count)],
             'alignment',
             { vertical: 'middle', horizontal: 'center' }
         )
 
-        Common.setProps(worksheet, ['A4', 'E4', 'F4'], 'alignment', { wrapText: true })
+        Common.setProps(worksheet, ['A4', 'F4', 'G4'], 'alignment', { wrapText: true })
 
         let purchases = []
 
@@ -1179,25 +1243,54 @@ const Edit = props => {
             purchases.push({ cellNm: 'A' + String(10 + Number(index + 1)), value: index + 1 })
             purchases.push({ cellNm: 'B' + String(10 + Number(index + 1)), value: row.brandNm })
 
-            purchases.push({ cellNm: 'C' + String(10 + Number(index + 1)), value: row.origin })
-            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.custCategory })
-            purchases.push({ cellNm: 'E' + String(10 + Number(index + 1)), value: row.material })
+            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.origin })
+            purchases.push({ cellNm: 'E' + String(10 + Number(index + 1)), value: row.custCategory })
+            purchases.push({ cellNm: 'F' + String(10 + Number(index + 1)), value: row.material })
 
-            purchases.push({ cellNm: 'C' + String(10 + Number(index + 1)), value: row.modelNo })
-            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.assortNm })
+            purchases.push({ cellNm: 'D' + String(10 + Number(index + 1)), value: row.modelNo })
+            purchases.push({ cellNm: 'E' + String(10 + Number(index + 1)), value: row.assortNm })
             purchases.push({
-                cellNm: 'E' + String(10 + Number(index + 1)),
+                cellNm: 'F' + String(10 + Number(index + 1)),
                 value: row.optionNm1 + row.optionNm2 + row.optionNm3
             })
-            purchases.push({ cellNm: 'F' + String(10 + Number(index + 1)), value: row.purchaseQty })
-            purchases.push({ cellNm: 'G' + String(10 + Number(index + 1)), value: '€ ' + row.mdRrp })
-            purchases.push({ cellNm: 'H' + String(10 + Number(index + 1)), value: row.buySupplyDiscount + ' %' })
+            purchases.push({ cellNm: 'G' + String(10 + Number(index + 1)), value: row.purchaseQty })
+            purchases.push({ cellNm: 'H' + String(10 + Number(index + 1)), value: '€ ' + row.mdRrp })
+            purchases.push({ cellNm: 'I' + String(10 + Number(index + 1)), value: row.buySupplyDiscount + ' %' })
             purchases.push({
-                cellNm: 'I' + String(10 + Number(index + 1)),
+                cellNm: 'J' + String(10 + Number(index + 1)),
                 value: String('€ ' + Number(row.purchaseQty * row.mdRrp * (1 - row.buySupplyDiscount / 100)).toFixed(2))
             })
-            purchases.push({ cellNm: 'J' + String(10 + Number(index + 1)), value: row.custNm })
+            purchases.push({ cellNm: 'K' + String(10 + Number(index + 1)), value: row.custNm })
+            
+            worksheet.getRow(10 + Number(index + 1)).height = 90
         })
+        let imageData = [];
+
+        for (let index = 0; index < list.length; index++) {
+            let row2 = list[index]
+
+            imageData.push(row2.imgServerUrl + row2.imagePath)
+        }
+
+        console.log('imageData : ' + imageData);
+
+        let params = {};
+        let response = null
+        let image = null;
+        
+        params.urls = imageData
+
+        response = await axios.post(process.env.REACT_APP_API_URL + '/file/godoImages', params)
+
+        for (let index = 0; index < response.data.images.length; index++) {
+            if (response.data.images[index] != '') {
+                image = workbook.addImage({
+                    base64: response.data.images[index],
+                    extension: 'jpeg'
+                })
+                worksheet.addImage(image, 'C'  + String(10 + Number(index + 1)) + ':C' + String(10 + Number(index + 1)))
+            }
+        }
 
         excelJson = excelJson.concat(purchases)
 
@@ -1227,6 +1320,19 @@ const Edit = props => {
 
         params.columnApi.autoSizeColumns(allColumnIds, false)
     }
+    
+    const onSelectionChanged = () => {
+        var selectedRows = gridApi.getSelectedRows()
+
+        setSelectedRows(selectedRows.length);
+    }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
 
     return (
         <Layout>
@@ -1235,6 +1341,7 @@ const Edit = props => {
             </div>
 
             <div className='notice-wrapper'>
+                <div className='notice-condition'>
                 <Row type='flex' justify='end' gutter={[16, 16]}>
                     {/* <Col span={2}>
                             <Button className="fullWidth" onClick={showGoodsSearchList}>
@@ -1410,18 +1517,20 @@ const Edit = props => {
                         <Input name='deliFee' value={state.deliFee} onChange={handleChangeInput} />
                     </Col>
                 </Row>
-                <div className='notice-condition marginTop-10' style={{ marginTop: '10px' }}>
-                    <div className='ag-theme-alpine' style={{ height: '600px', width: '100%' }}>
-                        <AgGridReact
+                <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                </div>
+                <div className=' marginTop-10' style={{ marginTop: '10px' }}>
+                    <div className='ag-theme-alpine marginTop-10' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                             columnDefs={columnDefs()}
                             rowData={state.items}
                             onCellClicked={onCellClicked}
                             suppressDragLeaveHidesColumns={true}
                             suppressRowClickSelection={true}
                             enableCellTextSelection={true}
-                            // onFirstDataRendered={onFirstDataRendered}
+                            onFirstDataRendered={onFirstDataRendered}
+                            onSelectionChanged={onSelectionChanged}
                             // onBodyScroll={onFirstDataRendered}
-                            defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                             rowSelection={'multiple'}
                             onGridReady={onGridReady}></AgGridReact>
                     </div>

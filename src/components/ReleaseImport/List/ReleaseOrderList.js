@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo, useEffect } from 'react'
 import queryStirng from 'query-string'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
@@ -46,50 +46,67 @@ const ReleaseOrderList = props => {
         columnDefs: [
             { field: 'shipIndDt', headerName: '출고지시일자', editable: false, suppressMenu: true },
             { field: 'shipKey', headerName: '출고지시번호', editable: false, suppressMenu: true },
-            {
-                field: 'assortGb',
-                headerName: '상품구분',
-                editable: false,
-                suppressMenu: true,
-                cellEditor: 'select',
-                cellEditorParams: {
-                    values: Helpers.extractValues(newAssortgb)
-                },
-                valueFormatter: function(params) {
-                    return Helpers.lookupValue(newAssortgb, params.value)
-                },
-                valueParser: function(params) {
-                    return Helpers.lookupKey(newAssortgb, params.newValue)
-                }
-            },
-            {
-                field: 'deliMethod',
-                headerName: '배송방법',
-                editable: false,
-                suppressMenu: true,
-                cellEditor: 'select',
-                cellEditorParams: {
-                    values: Helpers.extractValues(GridKeyValue.SHIPMENT)
-                },
-                valueFormatter: function(params) {
-                    return Helpers.lookupValue(GridKeyValue.SHIPMENT, params.value)
-                },
-                valueParser: function(params) {
-                    return Helpers.lookupKey(GridKeyValue.SHIPMENT, params.newValue)
-                }
-            },
-            { field: 'assortId', headerName: '품목코드', editable: false, suppressMenu: true },
-            { field: 'itemId', headerName: '상품코드', editable: false, suppressMenu: true },
-            { field: 'custNm', headerName: '주문자', editable: false, suppressMenu: true },
+            { field: 'orderDt', headerName: '주문일자', editable: false, suppressMenu: true },
+            { field: 'channelOrderNo', headerName: '고도몰주문번호', editable: false, suppressMenu: true },
+            { field: 'channelGoodsNo', headerName: '고도몰상품코드', editable: false, suppressMenu: true },
+            { field: 'receiverNm', headerName: '수령인', editable: false, suppressMenu: true },
+            // {
+            //     field: 'assortGb',
+            //     headerName: '상품구분',
+            //     editable: false,
+            //     suppressMenu: true,
+            //     cellEditor: 'select',
+            //     cellEditorParams: {
+            //         values: Helpers.extractValues(newAssortgb)
+            //     },
+            //     valueFormatter: function(params) {
+            //         return Helpers.lookupValue(newAssortgb, params.value)
+            //     },
+            //     valueParser: function(params) {
+            //         return Helpers.lookupKey(newAssortgb, params.newValue)
+            //     }
+            // },
+            // {
+            //     field: 'deliMethod',
+            //     headerName: '배송방법',
+            //     editable: false,
+            //     suppressMenu: true,
+            //     cellEditor: 'select',
+            //     cellEditorParams: {
+            //         values: Helpers.extractValues(GridKeyValue.SHIPMENT)
+            //     },
+            //     valueFormatter: function(params) {
+            //         return Helpers.lookupValue(GridKeyValue.SHIPMENT, params.value)
+            //     },
+            //     valueParser: function(params) {
+            //         return Helpers.lookupKey(GridKeyValue.SHIPMENT, params.newValue)
+            //     }
+            // },
+            // { field: 'assortId', headerName: '품목코드', editable: false, suppressMenu: true },
+            // { field: 'itemId', headerName: '상품코드', editable: false, suppressMenu: true },
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
-            { field: 'qty', headerName: '수량', editable: false, suppressMenu: true }
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            // {
+            //     field: 'rackNo',
+            //     headerName: '렉번호',
+            //     editable: false,
+            //     suppressMenu: true,
+            //     valueFormatter: function(params) {
+            //         if (params.value == null || params.value == undefined || params.value == '') {
+            //             return '999999'
+            //         }
+            //     }
+            // },
+            { field: 'qty', headerName: '출고지시수량', editable: false, suppressMenu: true }
         ]
     })
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setInit()
     }, [])
@@ -177,7 +194,7 @@ const ReleaseOrderList = props => {
         props.setSpin(true)
         return Https.getReleaseOrderList(p)
             .then(response => {
-                console.log(JSON.stringify(response))
+                console.log(response)
 
                 let target = response.data.data
                 setState({
@@ -225,11 +242,21 @@ const ReleaseOrderList = props => {
 
         params.columnApi.autoSizeColumns(allColumnIds, true)
     }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
+
     return (
         <>
             <div className='notice-header'>
                 <CustomBreadcrumb arr={['해외출고', '해외출고지시리스트']}></CustomBreadcrumb>
             </div>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end'>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={getSearchList}>
@@ -325,21 +352,22 @@ const ReleaseOrderList = props => {
                     </Row>
                 </Col>
             </Row>
-
+</div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         // rowSelection={'multiple'}
                         onFirstDataRendered={onFirstDataRendered}
+                        onBodyScroll={onFirstDataRendered}
                         suppressDragLeaveHidesColumns={true}
                         columnDefs={state.columnDefs}
                         onRowClicked={goDetail}
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

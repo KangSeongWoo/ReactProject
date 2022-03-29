@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react'
+import React, { useState, useLayoutEffect, useEffect , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import queryStirng from 'query-string'
 import { withRouter } from 'react-router-dom'
@@ -35,7 +35,7 @@ const DepositOne = props => {
     const [getData, setGetData] = useState({
         vendorId: '',
         depositNo: params.depositNo,
-        depositDt: ''
+        depositDt: '',
     })
 
     // 화면 노출 상태 state
@@ -65,13 +65,27 @@ const DepositOne = props => {
             { field: 'itemNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
             { field: 'depositQty', headerName: '수량', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
             { field: 'extraUnitcost', headerName: '원가', editable: false, suppressMenu: true }
         ]
     })
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -102,6 +116,7 @@ const DepositOne = props => {
 
             setState({
                 ...state,
+                height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100,
                 rowData: res.data.data.items
             })
 
@@ -156,78 +171,88 @@ const DepositOne = props => {
         })
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['국내입고', '국내입고내역']}></CustomBreadcrumb>
-            <Row gutter={[16, 8]}>
-                <Col span={20}>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                입고번호
-                            </Text>
-                        </Col>
-                        <Col span={6}>
-                            <Input
-                                name='depositNo'
-                                className='fullWidth'
-                                defaultValue={getData.depositNo != '' ? getData.depositNo : ''}
-                                onInput={handlechangeInput}
-                                disabled
-                            />
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
+                    <Row gutter={[16, 8]}>
+                        <Col span={20}>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        입고번호
+                                    </Text>
+                                </Col>
+                                <Col span={6}>
+                                    <Input
+                                        name='depositNo'
+                                        className='fullWidth'
+                                        defaultValue={getData.depositNo != '' ? getData.depositNo : ''}
+                                        onInput={handlechangeInput}
+                                        disabled
+                                    />
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        구매처
+                                    </Text>
+                                </Col>
+                                <Col span={6}>
+                                    <Select
+                                        className='fullWidth'
+                                        value={getData.vendorId}
+                                        name='selectVendor'
+                                        onChange={handleChangeOption}
+                                        disabled>
+                                        {purchaseVendorList.map(item => (
+                                            <Option key={item.value}>{item.label}</Option>
+                                        ))}
+                                    </Select>
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        입고일자
+                                    </Text>
+                                </Col>
+                                <Col span={6}>
+                                    <DatePicker
+                                        name='depositDt'
+                                        className='fullWidth'
+                                        value={getData.depositDt}
+                                        onChange={handleChangeDate}
+                                        disabled
+                                    />
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                구매처
-                            </Text>
-                        </Col>
-                        <Col span={6}>
-                            <Select
-                                className='fullWidth'
-                                value={getData.vendorId}
-                                name='selectVendor'
-                                onChange={handleChangeOption}
-                                disabled>
-                                {purchaseVendorList.map(item => (
-                                    <Option key={item.value}>{item.label}</Option>
-                                ))}
-                            </Select>
-                        </Col>
-                    </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                입고일자
-                            </Text>
-                        </Col>
-                        <Col span={6}>
-                            <DatePicker
-                                name='depositDt'
-                                className='fullWidth'
-                                value={getData.depositDt}
-                                onChange={handleChangeDate}
-                                disabled
-                            />
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
-            <Row className=' marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
-                        enableCellTextSelection={true}
-                        suppressDragLeaveHidesColumns={true}
-                        rowData={state.rowData}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
-                        // rowSelection={'multiple'}
-                        columnDefs={state.columnDefs}
-                        onFirstDataRendered={onFirstDataRendered}
-                        // colResizeDefault={'shift'}
-                        onGridReady={onGridReady}></AgGridReact>
                 </div>
-            </Row>
+                
+                <Row className=' marginTop-10'>
+                    <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
+                            enableCellTextSelection={true}
+                            suppressDragLeaveHidesColumns={true}
+                            rowData={state.rowData}
+                            // rowSelection={'multiple'}
+                            columnDefs={state.columnDefs}
+                            onFirstDataRendered={onFirstDataRendered}
+                            // colResizeDefault={'shift'}
+                            onGridReady={onGridReady}></AgGridReact>
+                    </div>
+                </Row>
+            </div>
         </>
     )
 }

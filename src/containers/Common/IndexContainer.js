@@ -8,7 +8,9 @@ const mapDispatchToProps = (dispatch) => ({
 
 
 const mapReduxStateToReactProps = (state) => {
-
+    return ({
+        userId : state.user.userId
+    })
 }
 
 

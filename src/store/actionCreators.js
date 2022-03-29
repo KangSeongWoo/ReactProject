@@ -24,3 +24,7 @@ export const spin = isSpin => ({
     type: types.SPIN,
     isSpin
 })
+
+export const setHeight = () => ({
+    type: types.SET_HEIGHT
+})

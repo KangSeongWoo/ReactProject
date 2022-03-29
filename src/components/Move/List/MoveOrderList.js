@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo,useEffect } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { withRouter } from 'react-router-dom'
 import queryStirng from 'query-string'
@@ -124,6 +124,18 @@ const MoveOrderList = props => {
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
             { field: 'qty', headerName: '수량', editable: false, suppressMenu: true },
             { field: 'cost', headerName: '금액', editable: false, suppressMenu: true }
         ]
@@ -131,6 +143,8 @@ const MoveOrderList = props => {
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setInit()
     }, [])
@@ -285,10 +299,18 @@ const MoveOrderList = props => {
             .focus()
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['이동', '이동지시리스트']}></CustomBreadcrumb>
-
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={[16, 8]}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={checkTheValue}>
@@ -387,14 +409,13 @@ const MoveOrderList = props => {
                     </Row>
                 </Col>
             </Row>
-
+</div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 600, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         onSelectionChanged={onSelectionChanged}
                         suppressRowClickSelection={true}
                         onFirstDataRendered={onFirstDataRendered}
@@ -404,6 +425,7 @@ const MoveOrderList = props => {
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

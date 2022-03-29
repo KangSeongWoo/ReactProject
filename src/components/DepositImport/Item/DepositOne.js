@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react'
+import React, { useState, useLayoutEffect, useEffect , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import queryStirng from 'query-string'
 import { withRouter } from 'react-router-dom'
@@ -65,14 +65,28 @@ const DepositOne = props => {
             { field: 'itemNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
             { field: 'depositQty', headerName: '수량', editable: false, suppressMenu: true },
             { field: 'extraUnitcost', headerName: '원가', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
             { field: 'memo', headerName: '메모', editable: true, suppressMenu: true }
         ]
     })
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -103,6 +117,7 @@ const DepositOne = props => {
 
             setState({
                 ...state,
+                height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100,
                 rowData: res.data.data.items
             })
 
@@ -169,6 +184,7 @@ const DepositOne = props => {
         params.depositNo = Common.trim(depositNo)
         params.vendorId = Common.trim(vendorId)
         params.items = selectedRows
+        params.userId = Common.trim(props.userId)
 
         const config = { headers: { 'Content-Type': 'application/json' } }
 
@@ -191,9 +207,18 @@ const DepositOne = props => {
             }) // ERROR
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['해외입고', '해외입고내역']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={[16, 8]}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth' onClick={modifyRow}>
@@ -257,13 +282,13 @@ const DepositOne = props => {
                     </Row>
                 </Col>
             </Row>
+            </div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         suppressDragLeaveHidesColumns={true}
                         rowData={state.rowData}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         // rowSelection={'multiple'}
                         columnDefs={state.columnDefs}
                         onFirstDataRendered={onFirstDataRendered}
@@ -271,6 +296,7 @@ const DepositOne = props => {
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

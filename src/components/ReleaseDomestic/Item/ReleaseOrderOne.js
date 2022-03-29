@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react'
+import React, { useState, useLayoutEffect, useEffect , useMemo } from 'react'
 import queryStirng from 'query-string'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
@@ -83,6 +83,18 @@ const ReleaseOrderOne = props => {
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
             { field: 'qty', headerName: '수량', editable: false, suppressMenu: true },
             { field: 'cost', headerName: '원가', editable: false, suppressMenu: true }
         ]
@@ -90,6 +102,8 @@ const ReleaseOrderOne = props => {
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -135,6 +149,7 @@ const ReleaseOrderOne = props => {
 
             setState({
                 ...state,
+                height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100,
                 rowData: res.data.data.ships
             })
 
@@ -209,9 +224,18 @@ const ReleaseOrderOne = props => {
         params.columnApi.autoSizeColumns(allColumnIds, true)
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <>
             <CustomBreadcrumb arr={['국내출고', '국내출고지시']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition' style={{ marginTop: '6px' }}>
             <Row gutter={[16, 8]}>
                 <Col span={20}>
                     <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
@@ -314,20 +338,20 @@ const ReleaseOrderOne = props => {
                     </Row>
                 </Col> */}
             </Row>
-
+</div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         // rowSelection={'multiple'}
                         onFirstDataRendered={onFirstDataRendered}
                         columnDefs={state.columnDefs}
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

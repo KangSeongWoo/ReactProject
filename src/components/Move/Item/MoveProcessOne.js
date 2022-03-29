@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
@@ -36,7 +36,7 @@ const MoveProcessOne = props => {
         storageId: params.storageId,
         shipId: params.shipId,
         shipGb: params.shipGb,
-        trackNo: params.trackNo,
+        blNo: params.blNo,
         userId: userId
     })
 
@@ -76,6 +76,18 @@ const MoveProcessOne = props => {
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
             { field: 'qty', headerName: '수량', editable: false, suppressMenu: true },
             { field: 'cost', headerName: '금액', editable: false, suppressMenu: true }
         ]
@@ -83,6 +95,8 @@ const MoveProcessOne = props => {
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -119,6 +133,7 @@ const MoveProcessOne = props => {
 
             setState({
                 ...state,
+                height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100,
                 rowData: res.data.data.moves
             })
         } catch (error) {
@@ -138,9 +153,18 @@ const MoveProcessOne = props => {
         params.columnApi.autoSizeColumns(allColumnIds, false)
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['이동', '이동처리내역']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row gutter={[16, 8]}>
                 <Col span={20}>
                     <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
@@ -242,28 +266,27 @@ const MoveProcessOne = props => {
                     <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
                         <Col span={4}>
                             <Text className='font-15 NanumGothic-Regular' strong>
-                                트래킹번호
+                                BL 번호
                             </Text>
                         </Col>
                         <Col span={12}>
                             <Input
                                 placeholder='발주번호를 입력하세요'
                                 className='width-80'
-                                defaultValue={getData.trackNo != '' ? getData.trackNo : ''}
+                                defaultValue={getData.blNo != '' ? getData.blNo : ''}
                                 disabled
                             />
                         </Col>
                     </Row>
                 </Col>
             </Row>
-
+</div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         suppressRowClickSelection={true}
                         onFirstDataRendered={onFirstDataRendered}
                         rowSelection={'multiple'}
@@ -271,6 +294,7 @@ const MoveProcessOne = props => {
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

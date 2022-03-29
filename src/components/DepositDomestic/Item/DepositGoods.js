@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useEffect, useCallback , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { withRouter } from 'react-router-dom'
 import queryStirng from 'query-string'
@@ -38,6 +38,7 @@ const DepositGoods = props => {
     const [ownerList, setOwnerList] = useState([])
     const [storageList, setStorageList] = useState([])
     const [isModalVisible, setIsModalVisible] = useState(false)
+    const [selectedRows, setSelectedRows] = useState(0);
 
     // API 호출 get state
     const [getData, setGetData] = useState({
@@ -100,6 +101,20 @@ const DepositGoods = props => {
             { field: 'itemNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: true,
+                suppressMenu: true,
+                cellStyle: { backgroundColor: '#DAF7A6' },
+                valueParser: function(params) {
+                    if (params.newValue.length > 6) {
+                        alert('렉 번호는 6자리 입니다.')
+                    }
+                    return params.newValue.substr(0, 6)
+                }
+            },
             {
                 field: 'availableQty',
                 headerName: '입고가능수량',
@@ -182,6 +197,8 @@ const DepositGoods = props => {
             ...getData,
             deposits: [...selectedRows]
         })
+        
+        setSelectedRows(selectedRows.length);
     }
 
     // 조건에 따라 입고처리 가능 내역 조회
@@ -291,6 +308,10 @@ const DepositGoods = props => {
                 flag = true
                 return false
             }
+
+            if (element.rackNo == null || element.rackNo == undefined || element.rackNo == '') {
+                element.rackNo = '999999' // 렉을 선택하지 않은 경우 (즉시 출고 등등...)
+            }
         })
 
         // 입고 수량 존재 유무
@@ -334,132 +355,143 @@ const DepositGoods = props => {
         params.columnApi.autoSizeColumns(allColumnIds, false)
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+            sortable: true,flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['국내입고', '국내입고처리']}></CustomBreadcrumb>
-            <Row type='flex' justify='end' gutter={[16, 8]}>
-                <Col style={{ width: '150px' }}>
-                    <Button type='primary' className='fullWidth' onClick={refresh} ghost>
-                        초기화
-                    </Button>
-                </Col>
-                <Col style={{ width: '150px' }}>
-                    <Button className='fullWidth search' onClick={checkTheValue}>
-                        조회
-                    </Button>
-                </Col>
-                <Col style={{ width: '150px' }}>
-                    <Button type='primary' className='fullWidth' onClick={saveDeposit}>
-                        저장
-                    </Button>
-                </Col>
-            </Row>
-            <Divider style={{ margin: '10px 0' }} />
-            <Row gutter={[16, 8]}>
-                <Col span={8}>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={8}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                발주번호
-                            </Text>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
+                    <Row type='flex' justify='end' gutter={[16, 8]}>
+                        <Col style={{ width: '150px' }}>
+                            <Button type='primary' className='fullWidth' onClick={refresh} ghost>
+                                초기화
+                            </Button>
                         </Col>
-                        <Col span={16}>
-                            <Button className='fullWidth' onClick={showModal}>
-                                발주조회
+                        <Col style={{ width: '150px' }}>
+                            <Button className='fullWidth search' onClick={checkTheValue}>
+                                조회
+                            </Button>
+                        </Col>
+                        <Col style={{ width: '150px' }}>
+                            <Button type='primary' className='fullWidth' onClick={saveDeposit}>
+                                저장
                             </Button>
                         </Col>
                     </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                    <Divider style={{ margin: '10px 0' }} />
+                    <Row gutter={[16, 8]}>
                         <Col span={8}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                구매처
-                            </Text>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={8}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        발주번호
+                                    </Text>
+                                </Col>
+                                <Col span={16}>
+                                    <Button className='fullWidth' onClick={showModal}>
+                                        발주조회
+                                    </Button>
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={8}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        구매처
+                                    </Text>
+                                </Col>
+                                <Col span={16}>
+                                    <Select
+                                        name='ownerId'
+                                        className='fullWidth margin-10'
+                                        value={getData.vendorId != '' ? getData.vendorId : ''}
+                                        disabled>
+                                        <Option key='00'>구매처 선택</Option>
+                                        {ownerList.map(item => (
+                                            <Option key={item.value}>{item.label}</Option>
+                                        ))}
+                                    </Select>
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={8}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        입고일자
+                                    </Text>
+                                </Col>
+                                <Col span={16}>
+                                    <DatePicker
+                                        name='depositDt'
+                                        className='fullWidth'
+                                        defaultValue={moment()}
+                                        onChange={handleChangeDate}
+                                    />
+                                </Col>
+                            </Row>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={8}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        입고창고
+                                    </Text>
+                                </Col>
+                                <Col span={16}>
+                                    <Select
+                                        name='storageId'
+                                        className='fullWidth'
+                                        value={getData.storageId != '' ? getData.storageId : ''}
+                                        disabled>
+                                        <Option key='00'>입고창고선택</Option>
+                                        {storageList.map(item => (
+                                            <Option key={item.value}>{item.label}</Option>
+                                        ))}
+                                    </Select>
+                                </Col>
+                            </Row>
                         </Col>
-                        <Col span={16}>
-                            <Select
-                                name='ownerId'
-                                className='fullWidth margin-10'
-                                value={getData.vendorId != '' ? getData.vendorId : ''}
-                                disabled>
-                                <Option key='00'>구매처 선택</Option>
-                                {ownerList.map(item => (
-                                    <Option key={item.value}>{item.label}</Option>
-                                ))}
-                            </Select>
-                        </Col>
-                    </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
                         <Col span={8}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                입고일자
-                            </Text>
-                        </Col>
-                        <Col span={16}>
-                            <DatePicker
-                                name='depositDt'
-                                className='fullWidth'
-                                defaultValue={moment()}
-                                onChange={handleChangeDate}
-                            />
-                        </Col>
-                    </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={8}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                입고창고
-                            </Text>
-                        </Col>
-                        <Col span={16}>
-                            <Select
-                                name='storageId'
-                                className='fullWidth'
-                                value={getData.storageId != '' ? getData.storageId : ''}
-                                disabled>
-                                <Option key='00'>입고창고선택</Option>
-                                {storageList.map(item => (
-                                    <Option key={item.value}>{item.label}</Option>
-                                ))}
-                            </Select>
+                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                                <Col span={16}>
+                                    <Input
+                                        name='purchaseNo'
+                                        placeholder='발주번호를 입력하세요'
+                                        className='width-80'
+                                        value={getData.purchaseNo != '' ? getData.purchaseNo : ''}
+                                        onInput={handlechangeInput}
+                                        autoComplete='off'
+                                    />
+                                </Col>
+                            </Row>
                         </Col>
                     </Row>
-                </Col>
-                <Col span={8}>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={16}>
-                            <Input
-                                name='purchaseNo'
-                                placeholder='발주번호를 입력하세요'
-                                className='width-80'
-                                value={getData.purchaseNo != '' ? getData.purchaseNo : ''}
-                                onInput={handlechangeInput}
-                                autoComplete='off'
-                            />
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
-
-            <Row className=' marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
-                        enableCellTextSelection={true}
-                        suppressDragLeaveHidesColumns={true}
-                        rowData={state.rowData}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
-                        onSelectionChanged={onSelectionChanged}
-                        suppressRowClickSelection={true}
-                        onFirstDataRendered={onFirstDataRendered}
-                        rowSelection={'multiple'}
-                        columnDefs={state.columnDefs}
-                        onGridReady={onGridReady}></AgGridReact>
                 </div>
-            </Row>
-            <PurchaseSearchM
-                isModalVisible={isModalVisible}
-                setIsModalVisible={setIsModalVisible}
-                backData={getData}
-                setBackData={setGetData}
-            />
+                <Row className=' marginTop-10'>
+                    <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                    <div className='ag-theme-alpine marginTop-10' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
+                            enableCellTextSelection={true}
+                            suppressDragLeaveHidesColumns={true}
+                            rowData={state.rowData}
+                            onSelectionChanged={onSelectionChanged}
+                            suppressRowClickSelection={true}
+                            onFirstDataRendered={onFirstDataRendered}
+                            rowSelection={'multiple'}
+                            columnDefs={state.columnDefs}
+                            onGridReady={onGridReady}></AgGridReact>
+                    </div>
+                </Row>
+                <PurchaseSearchM
+                    isModalVisible={isModalVisible}
+                    setIsModalVisible={setIsModalVisible}
+                    backData={getData}
+                    setBackData={setGetData}
+                    height={props.height}
+                    setHeight={props.setHeight}
+                />
+            </div>
         </>
     )
 }

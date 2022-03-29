@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useCallback , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { withRouter } from 'react-router-dom'
 import queryStirng from 'query-string'
 import moment from 'moment'
-import { Row, Col, Button, Input, Typography, DatePicker, Select, Divider, Spin } from 'antd'
+import { Row, Col, Button, Input, Typography, DatePicker, Select, Divider } from 'antd'
 import { AgGridReact } from 'ag-grid-react'
 import Https from '../../../api/http'
 import * as Helpers from '../../../utils/Helpers'
@@ -41,6 +41,8 @@ const MoveProcessList = props => {
 
     console.log('유저 ID : ' + userId)
 
+    let params = queryStirng.parse(props.params)
+    
     const [gridApi, setGridApi] = useState(null)
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [storageList, setStorageList] = useState([])
@@ -54,6 +56,7 @@ const MoveProcessList = props => {
         assortId: '',
         assortNm: '',
         shipId: '',
+        blNo: Common.trim(params.blNo) != '' ? Common.trim(params.blNo) : '',
         userId: userId
     })
 
@@ -61,14 +64,54 @@ const MoveProcessList = props => {
     const [state, setState] = useState({
         rowData: []
     })
+    
+    //상세 이동
+    const LinkCellRenderer1 = props => {
+        return (
+            <a herf='#' onClick={() => {
+                props.data.displayKd = 'POP'
+                //window.location.href = '/#/Move/moveProcessOne?' + queryStirng.stringify(e.data)
+                window
+                    .open(
+                        '/#/Move/moveProcessOne?' + queryStirng.stringify(props.data),
+                        '상세' + new Date(),
+                        'toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=no,width=1610,height=1402,top=, left= '
+                    )
+                    .focus()
+            }}>
+                {props.value}
+            </a>
+        )
+    }
+    
+    const LinkCellRenderer2 = (props) => {
+        return (
+            <Select placeholder="컨테이너 종류" value={props.value} style={{ width: 139 }} onChange={(e) => {
+                props.data.containerKd = e;
+                props.setValue(e);
+                return props
+            }}>
+                {Constans.CONTAINERKD.map(item => (
+                     <Option value={item.value}>{item.label}</Option>
+                ))}
+            </Select>
+        )
+    }
 
     const columnDefs = () => {
         return [
-            { field: 'orderId', headerName: '이동일자', editable: false, suppressMenu: true },
-            { field: 'orderSeq', headerName: '이동일자', editable: false, suppressMenu: true },
-            { field: 'shipDt', headerName: '이동일자', editable: false, suppressMenu: true },
+            {
+                field: 'shipKey',
+                headerName: '이동지시번호', 
+                editable: false,
+                suppressMenu: true,
+                headerCheckboxSelection: true,
+                headerCheckboxSelectionFilteredOnly: true,
+                checkboxSelection: true,
+                cellRenderer: 'LinkCellRenderer1'
+            },
             { field: 'shipIndDt', headerName: '이동지시일자', editable: false, suppressMenu: true },
-            { field: 'shipKey', headerName: '이동지시번호', editable: false, suppressMenu: true },
+            { field: 'shipDt', headerName: '이동일자', editable: false, suppressMenu: true },
             { field: 'trackNo ', headerName: '트래킹번호', editable: false, suppressMenu: true },
             {
                 field: 'storageId',
@@ -140,24 +183,39 @@ const MoveProcessList = props => {
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
             { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
-            { field: 'blNo', headerName: 'BL번호', editable: false, suppressMenu: true },
-            { field: 'shipmentDt', headerName: '선적일자', editable: false, suppressMenu: true },
-            { field: 'movementKd', headerName: '운송형태', editable: false, suppressMenu: true },
-            { field: 'estiArrvTm', headerName: '도착예정일자', editable: false, suppressMenu: true },
-            { field: 'containerKd', headerName: '컨테이너 종류', editable: false, suppressMenu: true },
-            { field: 'containerQty', headerName: '컨테이너 수량', editable: false, suppressMenu: true }
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
+            { field: 'blNo', headerName: 'BL번호', editable: true, suppressMenu: true,cellStyle: { backgroundColor: '#DAF7A6' } },
+            { field: 'shipmentDt', headerName: '선적일자', editable: true, suppressMenu: true,cellStyle: { backgroundColor: '#DAF7A6' } },
+            { field: 'movementKd', headerName: '운송형태', editable: true, suppressMenu: true ,cellStyle: { backgroundColor: '#DAF7A6' }},
+            { field: 'estiArrvDt', headerName: '도착예정일자', editable: true, suppressMenu: true ,cellStyle: { backgroundColor: '#DAF7A6' }},
+            {
+                field: 'containerKd', headerName: '컨테이너 종류', editable: false, suppressMenu: true, cellRenderer: 'LinkCellRenderer2'
+            },
+            { field: 'containerQty', headerName: '컨테이너 수량', editable: true, suppressMenu: true ,cellStyle: { backgroundColor: '#DAF7A6' }}
         ]
     }
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setInit()
     }, [])
 
     const hotkeyFunction = useCallback(event => {
         if (event.key == 'F8') {
-            document.querySelector('.search').click()
+            document.querySelector('.search').click()   
         }
     }, [])
 
@@ -165,6 +223,21 @@ const MoveProcessList = props => {
         changeArray()
     }, [storageList])
 
+    // 화면 진입할때 blNo를 가지고 오는 경우 
+    useEffect(() => {
+        if (params.blNo != null && params.blNo != undefined && params.blNo != '') {
+            let params = {}
+            
+            params.blNo = Common.trim(params.blno)
+
+            console.log('params : ' + JSON.stringify(params))
+
+            const p = new URLSearchParams(params)
+
+            getMoveProcessList(p)
+        }
+    },[])
+    
     // 창고 관련 리스트 카테고리 만들기
     const changeArray = () => {
         let storageCate = {}
@@ -196,19 +269,11 @@ const MoveProcessList = props => {
         setGridColumnApi(params.columnApi)
     }
 
-    // 체크박스 또는 클릭으로 선택시
-    const onSelectionChanged = () => {
-        var selectedRows = gridApi.getSelectedRows()
-        setGetData({
-            ...getData,
-            deposits: [...selectedRows]
-        })
-    }
-
     // 조건에 따라 주문이동 가능 내역 조회
     const checkTheValue = () => {
         props.setSpin(true)
-        const { startDt, endDt, storageId, shipId, assortId, assortNm } = getData
+        
+        const { startDt, endDt, storageId, shipId, assortId, assortNm, blNo } = getData
 
         let params = {}
         params.startDt = Common.trim(startDt.format('YYYY-MM-DD'))
@@ -217,11 +282,16 @@ const MoveProcessList = props => {
         params.shipId = Common.trim(shipId)
         params.assortId = Common.trim(assortId)
         params.assortNm = Common.trim(assortNm)
+        params.blNo = Common.trim(blNo)
 
         console.log('params : ' + JSON.stringify(params))
 
         const p = new URLSearchParams(params)
 
+        getMoveProcessList(p)
+    }
+    
+    const getMoveProcessList = (p) => {
         return Https.getMoveProcessList(p)
             .then(response => {
                 console.log(response)
@@ -229,6 +299,7 @@ const MoveProcessList = props => {
                 let target = response.data.data
                 setState({
                     ...state,
+                    height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100,
                     rowData: target.moves // 화면에 보여줄 리스트
                 })
                 props.setSpin(false)
@@ -292,7 +363,7 @@ const MoveProcessList = props => {
             endDt: e
         })
     }
-
+    
     // 컬럼 리사이즈
     const onFirstDataRendered = params => {
         var allColumnIds = []
@@ -301,19 +372,6 @@ const MoveProcessList = props => {
         })
 
         params.columnApi.autoSizeColumns(allColumnIds, false)
-    }
-
-    //상세 이동
-    const goDetail = e => {
-        e.data.displayKd = 'POP'
-        //window.location.href = '/#/Move/moveProcessOne?' + queryStirng.stringify(e.data)
-        window
-            .open(
-                '/#/Move/moveProcessOne?' + queryStirng.stringify(e.data),
-                '상세' + new Date(),
-                'toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=no,width=1610,height=1402,top=, left= '
-            )
-            .focus()
     }
 
     const excelDownload = () => {
@@ -431,6 +489,7 @@ const MoveProcessList = props => {
                 sendData.endDt = getData.endDt.format('YYYY-MM-DD')
                 sendData.shipId = getData.shipId
                 sendData.storageId = getData.storageId
+                sendData.userId = getData.userId
                 sendData.moves = rowObj
 
                 const config = { headers: { 'Content-Type': 'application/json' } }
@@ -460,11 +519,65 @@ const MoveProcessList = props => {
         }
         reader.readAsBinaryString(input.files[0])
     }
+    
+    const saveTheValue = async () => {
+        var selectedRows = gridApi.getSelectedRows()
+        
+        if (selectedRows.length == 0) {
+            alert("저장할 데이터를 선택해 주세요");
+            return false;
+        }
+        
+        let sendData = {}
+
+        sendData.assortId = getData.assortId
+        sendData.assortNm = getData.assortNm
+        sendData.startDt = getData.startDt.format('YYYY-MM-DD')
+        sendData.endDt = getData.endDt.format('YYYY-MM-DD')
+        sendData.shipId = getData.shipId
+        sendData.storageId = getData.storageId
+        sendData.userId = getData.userId
+        sendData.moves = selectedRows
+
+        const config = { headers: { 'Content-Type': 'application/json' } }
+
+        props.setSpin(true)
+        return await Https.uploadExcelDB(sendData, config)
+            .then(response => {
+                props.setSpin(false)
+            })
+            .catch(error => {
+                console.error(error)
+                Common.commonNotification({
+                    kind: 'error',
+                    message: '에러 발생',
+                    description: '잠시후 다시 시도해 주세요'
+                })
+                document.querySelector('#excelFile').value = ''
+                props.setSpin(false)
+            }) // ERROR
+    }
+    
+    const handleChangeStorage = (e) => {
+        setGetData({
+            ...getData,
+            storageId: e
+        })
+    }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
 
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['이동', '이동리스트']}></CustomBreadcrumb>
 
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={[16, 8]}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth' onClick={excelDownload}>
@@ -485,6 +598,11 @@ const MoveProcessList = props => {
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={checkTheValue}>
                         조회
+                    </Button>
+                </Col>
+                <Col style={{ width: '150px' }}>
+                    <Button type='primary' className='fullWidth search' onClick={saveTheValue}>
+                        저장
                     </Button>
                 </Col>
             </Row>
@@ -563,8 +681,10 @@ const MoveProcessList = props => {
                         </Col>
                         <Col span={12}>
                             <Select
+                                name='storageId'
                                 placeholder='입고센터를 선택해 주세요.'
                                 defaultValue={getData.storageId != '' ? getData.storageId : undefined}
+                                onChange={handleChangeStorage}
                                 className='fullWidth'>
                                 {storageList.map(item => (
                                     <Option key={item.value}>{item.label}</Option>
@@ -572,25 +692,43 @@ const MoveProcessList = props => {
                             </Select>
                         </Col>
                     </Row>
+                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                        <Col span={4}>
+                            <Text className='font-15 NanumGothic-Regular' strong>
+                                BL 번호
+                            </Text>
+                        </Col>
+                        <Col span={12}>
+                            <Input
+                                name='blNo'
+                                placeholder='BL 번호를 입력해주세요.'
+                                className='fullWidth'
+                                defaultValue={getData.blNo != '' ? getData.blNo : undefined}
+                                onInput={handlechangeInput}
+                            />
+                        </Col>
+                    </Row>
                 </Col>
             </Row>
-
+</div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
-                        onSelectionChanged={onSelectionChanged}
+                        //onSelectionChanged={onSelectionChanged}
                         suppressRowClickSelection={true}
                         onFirstDataRendered={onFirstDataRendered}
+                        onBodyScroll={onFirstDataRendered}
                         rowSelection={'multiple'}
-                        onRowClicked={goDetail}
+                        // onRowClicked={goDetail}
+                        frameworkComponents={{ LinkCellRenderer1: LinkCellRenderer1, LinkCellRenderer2: LinkCellRenderer2 }}
                         columnDefs={columnDefs()}
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

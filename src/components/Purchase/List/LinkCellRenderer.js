@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import queryStirng from 'query-string'
 
@@ -12,7 +12,7 @@ class LinkCellRenderer extends Component {
         window
             .open(
                 url,
-                '��' + new Date(),
+                '상세' + new Date(),
                 'toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=no,width=1610,height=1402,top=, left= '
             )
             .focus()

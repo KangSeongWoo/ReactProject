@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useLayoutEffect, useEffect } from 'react'
+import React, { useState, useCallback, useLayoutEffect, useEffect , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Row, Col, Button, Typography, Divider, Modal, Select, Input, Spin } from 'antd'
 import { AgGridReact } from 'ag-grid-react'
@@ -19,6 +19,7 @@ const ProductChooseM = props => {
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [storageList, setStorageList] = useState([])
     const [purchaseVendorList, setPurchaseVendorList] = useState([])
+    const [selectedRows, setSelectedRows] = useState(0);
 
     // 화면 상태에 관련 한 state
     const [state, setState] = useState({
@@ -28,20 +29,22 @@ const ProductChooseM = props => {
     const columnDefs = () => {
         return [
             {
-                field: 'assortId',
-                headerName: '품목코드',
+                field: 'rackNo',
+                headerName: '렉번호',
                 editable: false,
                 suppressMenu: true,
                 headerCheckboxSelection: true,
                 headerCheckboxSelectionFilteredOnly: true,
                 checkboxSelection: true
             },
+            { field: 'assortId', headerName: '품목코드', editable: false, suppressMenu: true },
             { field: 'itemId', headerName: '상품코드', editable: false, suppressMenu: true },
             { field: 'depositDt', headerName: '입고일자', editable: false, suppressMenu: true },
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'brandNm', headerName: '브랜드', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
             { field: 'qty', headerName: '재고', editable: false, suppressMenu: true },
             { field: 'availableQty', headerName: '이동가능수량', editable: false, suppressMenu: true },
             { field: 'cost', headerName: '가격', editable: false, suppressMenu: true }
@@ -61,6 +64,8 @@ const ProductChooseM = props => {
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -221,6 +226,19 @@ const ProductChooseM = props => {
             rowData: []
         })
     }
+    
+    const onSelectionChanged = () => {
+        var selectedRows = gridApi.getSelectedRows()
+
+        setSelectedRows(selectedRows.length);
+    }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
 
     return (
         <>
@@ -231,6 +249,8 @@ const ProductChooseM = props => {
                 onCancel={handleCancel}
                 width={'70%'}
                 footer={[<></>]}>
+                           <div className='notice-wrapper'>
+                <div className='notice-condition'>
                 <Row type='flex' justify='end' gutter={[16, 8]}>
                     <Col style={{ width: '150px' }}>
                         <Button type='primary' className='fullWidth' onClick={refresh} ghost>
@@ -314,22 +334,24 @@ const ProductChooseM = props => {
                         </Row>
                     </Col>
                 </Row>
-
+</div>
                 <Row className='marginTop-10'>
-                    <div className='ag-theme-alpine' style={{ height: 400, width: '100%' }}>
-                        <AgGridReact
+                    <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                    <div className='ag-theme-alpine marginTop-10' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                             enableCellTextSelection={true}
                             rowData={state.rowData}
                             suppressDragLeaveHidesColumns={true}
-                            defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                             suppressRowClickSelection={true}
                             rowSelection={'multiple'}
                             onRowDataChanged={onRowDataChanged}
                             columnDefs={columnDefs()}
+                            onSelectionChanged={onSelectionChanged}
                             onFirstDataRendered={onFirstDataRendered}
                             onGridReady={onGridReady}></AgGridReact>
                     </div>
                 </Row>
+                </div>
             </Modal>
         </>
     )

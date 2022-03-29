@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo, useEffect } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Layout, Spin, Input, Select, DatePicker, Button, Typography, Row, Col } from 'antd'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
@@ -31,7 +31,6 @@ const List = props => {
         rowData: [],
         assortId: '',
         assortNm: '',
-        height: window.innerHeight - 369,
         userId: userId
     })
 
@@ -77,9 +76,11 @@ const List = props => {
     }, [])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
     }, [])
-
+    
     // 상품 리스트 내역 호출
     const getGoods = () => {
         let params = {}
@@ -190,94 +191,110 @@ const List = props => {
         })
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+            editable: false,
+            enableRowGroup: true,
+            enablePivot: true,
+            enableValue: true,
+            sortable: true,
+            resizable: true,
+            filter: true,
+            minWidth: 50
+        };
+    }, []);
+
     return (
         <Layout>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['상품', '상품리스트']}></CustomBreadcrumb>
             <div className='notice-wrapper'>
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Row gutter={16} className='onVerticalCenter marginTop-10'>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    상품코드
-                                </Text>
-                            </Col>
-                            <Col span={20}>
-                                <Input name='assortId' value={state.assortId} onChange={handleInputChange} />
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={12}>
-                        <Row gutter={16} className='onVerticalCenter marginTop-10'>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    상품명
-                                </Text>
-                            </Col>
-                            <Col span={20}>
-                                <Input name='assortNm' value={state.assortNm} onChange={handleInputChange} />
-                            </Col>
-                        </Row>
-                    </Col>
-                </Row>
-                <Row gutter={16}>
-                    <Col span={12}>
-                        <Row gutter={16} className='onVerticalCenter marginTop-10'>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    생성일
-                                </Text>
-                            </Col>
-                            <Col span={20}>
-                                <RangePicker
-                                    className='fullWidth'
-                                    value={[state.regDtBegin, state.regDtEnd]}
-                                    ranges={{
-                                        Today: [moment(), moment()],
-                                        '3일': [moment().subtract(3, 'd'), moment()],
-                                        '7일': [moment().subtract(7, 'd'), moment()],
-                                        '1개월': [moment().subtract(1, 'M'), moment()],
-                                        '3개월': [moment().subtract(3, 'M'), moment()],
-                                        '1년': [moment().subtract(1, 'Y'), moment()]
-                                    }}
-                                    onChange={handleChangeRangeDate}
-                                />
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={12}>
-                        <Row gutter={16} className='onVerticalCenter marginTop-10'>
-                            <Col span={4}>
-                                <Text className='font-15 NanumGothic-Regular' strong>
-                                    진행상태
-                                </Text>
-                            </Col>
-                            <Col span={20}>
-                                <Select
-                                    name='shortageYn'
-                                    className='fullWidth'
-                                    onChange={handleSelectShortageYn}
-                                    value={state.shortageYn}>
-                                    {Constans.SHORTAGEYN.map(item => (
-                                        <Option key={item.value}>{item.label}</Option>
-                                    ))}
-                                </Select>
-                            </Col>
-                        </Row>
-                    </Col>
-                </Row>
-                <Row gutter={16} type='flex' justify='center' align='middle' className='marginTop-10'>
-                    <Col style={{ width: '150px' }}>
-                        <Button type='primary' className='fullWidth' ghost onClick={refresh}>
-                            초기화
-                        </Button>
-                    </Col>
-                    <Col style={{ width: '150px' }}>
-                        <Button type='primary' className='fullWidth search' onClick={getGoods}>
-                            검색
-                        </Button>
-                    </Col>
-                </Row>
+                <div className='notice-condition'>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Row gutter={16} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        상품코드
+                                    </Text>
+                                </Col>
+                                <Col span={20}>
+                                    <Input name='assortId' value={state.assortId} onChange={handleInputChange} />
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Col span={12}>
+                            <Row gutter={16} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        상품명
+                                    </Text>
+                                </Col>
+                                <Col span={20}>
+                                    <Input name='assortNm' value={state.assortNm} onChange={handleInputChange} />
+                                </Col>
+                            </Row>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Row gutter={16} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        생성일
+                                    </Text>
+                                </Col>
+                                <Col span={20}>
+                                    <RangePicker
+                                        className='fullWidth'
+                                        value={[state.regDtBegin, state.regDtEnd]}
+                                        ranges={{
+                                            Today: [moment(), moment()],
+                                            '3일': [moment().subtract(3, 'd'), moment()],
+                                            '7일': [moment().subtract(7, 'd'), moment()],
+                                            '1개월': [moment().subtract(1, 'M'), moment()],
+                                            '3개월': [moment().subtract(3, 'M'), moment()],
+                                            '1년': [moment().subtract(1, 'Y'), moment()]
+                                        }}
+                                        onChange={handleChangeRangeDate}
+                                    />
+                                </Col>
+                            </Row>
+                        </Col>
+                        <Col span={12}>
+                            <Row gutter={16} className='onVerticalCenter marginTop-10'>
+                                <Col span={4}>
+                                    <Text className='font-15 NanumGothic-Regular' strong>
+                                        진행상태
+                                    </Text>
+                                </Col>
+                                <Col span={20}>
+                                    <Select
+                                        name='shortageYn'
+                                        className='fullWidth'
+                                        onChange={handleSelectShortageYn}
+                                        value={state.shortageYn}>
+                                        {Constans.SHORTAGEYN.map(item => (
+                                            <Option key={item.value}>{item.label}</Option>
+                                        ))}
+                                    </Select>
+                                </Col>
+                            </Row>
+                        </Col>
+                    </Row>
+                    <Row gutter={16} type='flex' justify='center' align='middle' className='marginTop-10'>
+                        <Col style={{ width: '150px' }}>
+                            <Button type='primary' className='fullWidth' ghost onClick={refresh}>
+                                초기화
+                            </Button>
+                        </Col>
+                        <Col style={{ width: '150px' }}>
+                            <Button type='primary' className='fullWidth search' onClick={getGoods}>
+                                검색
+                            </Button>
+                        </Col>
+                    </Row>
+                </div>
+                
                 <div className='clearfix'>
                     <div className='notice-center-button-left'>
                         <span>총 {state.rowData.length} 개</span>
@@ -289,23 +306,13 @@ const List = props => {
                     </div>
                 </div>
                 <div>
-                    <div className='ag-theme-alpine' style={{ height: state.height, width: '100%' }}>
-                        <AgGridReact
+                    <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                             suppressDragLeaveHidesColumns={true}
                             columnDefs={columnDefs()}
                             rowData={state.rowData}
                             ensureDomOrder={true}
                             enableCellTextSelection={true}
-                            defaultColDef={{
-                                editable: false,
-                                enableRowGroup: true,
-                                enablePivot: true,
-                                enableValue: true,
-                                sortable: true,
-                                resizable: true,
-                                filter: true,
-                                minWidth: 50
-                            }}
                             frameworkComponents={LinkCellRenderer}
                             columnTypes={{
                                 fullCategoryNmType: {

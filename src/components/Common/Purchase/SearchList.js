@@ -1,9 +1,9 @@
-import React, { Component } from 'react'
+import React, { Component , useMemo } from 'react'
 
 import CustomBreadcrumb from '../../../utils/CustomBreadcrumb'
 import { Layout } from 'antd'
 import { PageHeader } from 'antd'
-
+import { withRouter } from 'react-router-dom'
 import { Form, Input, Tooltip, Icon, DatePicker, Select, Row, Col, Modal, Checkbox, Button, AutoComplete } from 'antd'
 
 import '../../../style/custom.css'
@@ -212,6 +212,12 @@ class SearchList extends Component {
         this.setState({ RegDtBeginOpen: open })
     }
 
+    defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+        };
+    }, []);
+
     render() {
         const {
             rowData,
@@ -298,7 +304,7 @@ class SearchList extends Component {
                     </table>
                     <div>
                         <div className='ag-theme-alpine' style={{ height: 200, width: '100%' }}>
-                            <AgGridReact
+                            <AgGridReact defaultColDef={this.defaultColDef} multiSortKey={'ctrl'}
                                 suppressDragLeaveHidesColumns={true}
                                 ref='gridRef'
                                 columnDefs={this.state.columnDefs}
@@ -326,4 +332,4 @@ class SearchList extends Component {
 }
 
 //export default Create
-export default SearchList
+export default withRouter(SearchList)

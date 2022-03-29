@@ -1,5 +1,5 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Route,withRouter, Switch, Redirect } from 'react-router-dom'
+import React, { useEffect, useLayoutEffect, useState , useMemo } from 'react';
+import { Route,withRouter, Switch, Redirect, useLocation } from 'react-router-dom'
 import { Layout, BackTop } from 'antd'
 import '../../style/layout.css'
 import routes from '../../routes/index'
@@ -7,12 +7,20 @@ import Https from '../../api/http'
 import Loading from '../../components/Common/Loading/Loading'
 import queryStirng from 'query-string'
 import { menu } from '../../utils/menu'
+import * as Common from '../../utils/Common'
 
 import AppHeader from '../template/AppHeader'
 import AppAside from '../template/AppAside'
 import AppFooter from '../template/AppFooter'
 
 const { Content } = Layout
+let host = '';
+
+if(window.location.host.indexOf("13.125.17.235") != -1 || window.location.host.indexOf("terp.trdst.com") != -1) {
+    host = '개발'
+} else if (window.location.host.indexOf("localhost:3000") != -1){
+    host = '로컬'
+}
 
 const LayoutTemplate = (props) => {
     const { menuToggle, user, spin, menuClick, logOut, setUserInfo } = props;
@@ -20,9 +28,27 @@ const LayoutTemplate = (props) => {
     const [state, setState] = useState({
         avatar : "",
         show: true,
+        //height : 0
     })
 
-    useLayoutEffect(() => {
+    // const resizeEvent = () => {
+    //     let height = window.innerHeight 
+    //     - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) 
+    //     - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - 100
+
+    //     for(let i = 0; i < document.querySelectorAll('.notice-condition').length; i++){
+    //         height -= document.querySelectorAll('.notice-condition')[i].clientHeight
+    //     }
+
+    //     setState({
+    //         ...state,
+    //         height: height
+    //     })
+    // }
+    
+    useEffect(() => {
+        //window.addEventListener('resize', resizeEvent)
+        //resizeEvent();
         isLogin();
     }, [])
 
@@ -41,17 +67,18 @@ const LayoutTemplate = (props) => {
                         setUserInfo(response.data.user.id);
                     })
                     .catch(error => {
-                        console.error(error)
-                        
+                        console.log(error)
+                        //localStorage.clear();
+                        //window.location.reload();
                     }) // ERROR
             }
         } catch (e) {
-            console.error(e)
-            localStorage.clear()
-            window.location.reload()
-        }
+            console.log(e)
+            //localStorage.clear()
+            //window.location.reload()
+        } 
     }
-    
+  
     if (queryStirng.parse(props.location.search).displayKd != 'POP') {
         return (
             <>
@@ -61,10 +88,12 @@ const LayoutTemplate = (props) => {
                     <AppAside menuToggle={menuToggle} menu={menu} />
                     <Layout style={{ marginLeft: menuToggle ? '80px' : '200px', minHeight: '100vh' }}>
                         <AppHeader
+                            host={host}
                             menuToggle={menuToggle}
                             menuClick={() => menuClick(menuToggle)}
                             logOut={logOut}
                         />
+                        <div className={(Common.isMobile() && menuToggle != true) ? 'dim' : ''} onClick={() => menuClick(menuToggle)}></div>
                         <Content className='content'>
                             <Switch>
                                 {routes.map(item => {
@@ -73,11 +102,11 @@ const LayoutTemplate = (props) => {
                                             key={item.path}
                                             path={item.path}
                                             exact={item.exact}
-                                            render={props =>
+                                            render={props => 
                                                 !auth ? (
-                                                    <item.component {...props} />
+                                                    <item.component {...props} height={state.height}/>
                                                 ) : item.auth && item.auth.indexOf(auth) !== -1 ? (
-                                                    <item.component {...props} />
+                                                    <item.component {...props} height={state.height}/>
                                                 ) : (
                                                     <Redirect to='/404' {...props} />
                                                 )
@@ -107,9 +136,9 @@ const LayoutTemplate = (props) => {
                                         exact={item.exact}
                                         render={props =>
                                             !auth ? (
-                                                <item.component {...props} />
+                                                <item.component {...props} height={state.height}/>
                                             ) : item.auth && item.auth.indexOf(auth) !== -1 ? (
-                                                <item.component {...props} />
+                                                <item.component {...props} height={state.height}/>
                                             ) : (
                                                 <Redirect to='/404' {...props} />
                                             )

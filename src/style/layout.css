@@ -41,6 +41,19 @@
     text-align: center;
 }
 
-/* @media screen and (max-width: 960px) {
-    font-size: 1.4rem;
-} */
+@media screen and (max-width: 450px) {
+    .ant-layout-sider-collapsed{
+        flex: 0 0 80px!important;
+        max-width: 0px!important;
+        min-width: 0px!important;
+        width: 0px!important;
+    }
+  
+    section > aside{
+        z-index: 11100!important;
+    }
+
+    aside~section {
+        margin-left: 0px!important;
+    }
+} 

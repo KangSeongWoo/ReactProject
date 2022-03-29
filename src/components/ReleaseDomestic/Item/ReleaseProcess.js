@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo,useEffect } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
@@ -6,6 +6,7 @@ import { Row, Col, Button, Input, DatePicker, Select, Typography, Divider, Spin 
 import { AgGridReact } from 'ag-grid-react'
 import Https from '../../../api/http'
 import * as Common from '../../../utils/Common.js'
+import * as XLSX from 'xlsx'
 
 import '/src/style/custom.css'
 import 'ag-grid-community/dist/styles/ag-grid.css'
@@ -15,9 +16,11 @@ const { Text } = Typography
 const { Option } = Select
 
 const ReleaseProcess = props => {
+    const { userId } = props.userId
     const [gridApi, setGridApi] = useState(null)
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [purchaseVendorList, setPurchaseVendorList] = useState([])
+    const [selectedRows, setSelectedRows] = useState(0);
 
     // API 호출 get state
     const [getData, setGetData] = useState({
@@ -28,7 +31,8 @@ const ReleaseProcess = props => {
         assortNm: '',
         storageId: '000001',
         orderId: '',
-        shipId: ''
+        shipId: '',
+        userId : userId
     })
 
     // 화면 노출 상태 state
@@ -44,20 +48,39 @@ const ReleaseProcess = props => {
                 headerCheckboxSelectionFilteredOnly: true,
                 checkboxSelection: true
             },
-            { field: 'shipKey', headerName: '출고지시번호', editable: false, suppressMenu: true },
-            { field: 'orderKey', headerName: '주문번호', editable: false, suppressMenu: true },
-            { field: 'assortId', headerName: '품목코드', editable: false, suppressMenu: true },
-            { field: 'itemId', headerName: '상품코드', editable: false, suppressMenu: true },
-            { field: 'custNm', headerName: '주문자', editable: false, suppressMenu: true },
+            //{ field: 'shipKey', headerName: '출고지시번호', editable: false, suppressMenu: true },
+            { field: 'channelOrderNo', headerName: '고도몰주문번호', editable: false, suppressMenu: true },
+            { field: 'channelGoodsNo', headerName: '고도몰상품코드', editable: false, suppressMenu: true },
+            {
+                field: 'rackNo',
+                headerName: '렉번호',
+                editable: false,
+                suppressMenu: true,
+                valueFormatter: function(params) {
+                    if (params.value == null || params.value == undefined || params.value == '') {
+                        return '999999'
+                    }
+                }
+            },
+            { field: 'receiverNm', headerName: '수령인', editable: false, suppressMenu: true },
+            //{ field: 'orderKey', headerName: '주문번호', editable: false, suppressMenu: true },
+            //{ field: 'assortId', headerName: '품목코드', editable: false, suppressMenu: true },
+            //{ field: 'itemId', headerName: '상품코드', editable: false, suppressMenu: true },
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
-            { field: 'qty', headerName: '수량', editable: false, suppressMenu: true }
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
+            { field: 'qty', headerName: '출고지시수량', editable: false, suppressMenu: true },
+            { field: 'receiverAddr1', headerName: '수취인기본주소', editable: false, suppressMenu: true },
+            { field: 'receiverAddr2', headerName: '수취인상세주소', editable: false, suppressMenu: true },
+            { field: 'receiverHp', headerName: '수취인연락처', editable: false, suppressMenu: true },
         ]
     })
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         document.addEventListener('keyup', hotkeyFunction)
         setInit()
     }, [])
@@ -95,6 +118,8 @@ const ReleaseProcess = props => {
             ...getData,
             ships: selectedRows
         })
+        
+        setSelectedRows(selectedRows.length);
     }
 
     // 출고 시작 날짜 선택
@@ -154,7 +179,7 @@ const ReleaseProcess = props => {
 
         params.startDt = Common.trim(startDt.format('YYYY-MM-DD'))
         params.endDt = Common.trim(endDt.format('YYYY-MM-DD'))
-        params.vendorId = vendorId == '00' ? Common.trim(vendorId) : ''
+        params.vendorId = vendorId != '00' ? Common.trim(vendorId) : ''
         params.assortId = Common.trim(assortId)
         params.assortNm = Common.trim(assortNm)
         params.shipId = Common.trim(shipId)
@@ -233,10 +258,83 @@ const ReleaseProcess = props => {
                 props.setSpin(false)
             }) // ERROR
     }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
+    const exportExcel = () => {
+        props.setSpin(true)
+        var wb = XLSX.utils.book_new()
+
+        let l = []
+
+        gridApi.selectAllFiltered()
+
+        if (gridApi.getSelectedRows().length == 0) {
+            alert('출력할 데이터가 없습니다.')
+            props.setSpin(false)
+            return false
+        }
+
+        for (let i = 0; i < gridApi.getSelectedRows().length; i++) {
+            let tempData = gridApi.getSelectedRows()[i]
+            let o = {
+                출고지시일자 : tempData.shipIndDt,
+                고도몰주문번호 : tempData.channelOrderNo,
+                고도몰상품코드 : tempData.channelGoodsNo,
+                렉번호 : tempData.rackNo,
+                상품명 : tempData.assortNm,
+                옵션1 : tempData.optionNm1,
+                옵션2 : tempData.optionNm2,
+                옵션3 : tempData.optionNm3,
+                출고지시수량 : tempData.qty,
+                주문자 : tempData.receiverNm,
+                수취인기본주소 : tempData.receiverAddr1,
+                수취인상세주소 : tempData.receiverAddr2,
+                수취인연락처 : tempData.receiverHp
+            }
+            console.log(o)
+            l.push(o)
+        }
+        var wscols = [
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 15 },
+            { wch: 10 },
+            { wch: 80 },
+            { wch: 20 },
+            { wch: 10 },
+            { wch: 10 },
+            { wch: 10 },
+            { wch: 10 },
+            { wch: 70 },
+            { wch: 20 },
+            { wch: 20 },
+        ]
+        let fname = moment().format('YYYYMMDDHHmmss') + '.xlsx'
+        let ws = XLSX.utils.json_to_sheet(l)
+        ws['!cols'] = wscols
+        XLSX.utils.book_append_sheet(wb, ws, 'sheet1')
+        XLSX.writeFile(wb, fname)
+        gridApi.deselectAll()
+        props.setSpin(false)
+    }
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['국내출고', '국내출고처리']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition' style={{ marginTop: '6px' }}>
             <Row type='flex' justify='end' gutter={[16, 8]}>
+                <Col style={{ width: '150px' }}>
+                    <Button type='primary' className='fullWidth' onClick={exportExcel}>
+                        인쇄
+                    </Button>
+                </Col>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={getSearchList} ghost>
                         조회
@@ -352,21 +450,25 @@ const ReleaseProcess = props => {
                     </Row>
                 </Col>
             </Row>
-
+</div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 550, width: '100%' }}>
+                <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                <div className='ag-theme-alpine marginTop-10' style={{ height: props.height, width: '100%' }}>
                     <AgGridReact
+                        defaultColDef={defaultColDef}
+                        multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={state.rowData}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
-                        // rowSelection={'multiple'}
+                        rowSelection={'multiple'}
                         onFirstDataRendered={onFirstDataRendered}
+                        onBodyScroll={onFirstDataRendered}
                         onSelectionChanged={onSelectionChanged}
                         columnDefs={state.columnDefs}
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

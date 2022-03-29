@@ -23,6 +23,3 @@ docker load -i adminWeb.tar
 docker run -it -d --name "admin-web" -p 443:443 -p 80:80 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
 
 # docker run -it -d --name "admin-web" -p 80:80 -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
-# docker run -it -d --name "admin-web" -p 80:443 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
-# docker run -it -d --name "admin-web" -p 443:443 -p 80:443 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest
-# docker run -it -d --name "admin-web" -p 443:443 -v /home/ec2-user/ssl:/etc/nginx/ssl -v /home/ec2-user/logs/access:/var/logs/access -v /home/ec2-user/logs/error:/var/logs/error admin-web:latest

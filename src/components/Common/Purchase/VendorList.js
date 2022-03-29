@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Col, Row, Typography, Button } from 'antd'
 import { Input, Modal, Spin } from 'antd'
@@ -132,6 +132,16 @@ const VendorList = props => {
         return rows
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          editable: false, 
+          flex: 1,
+          minWidth: 100, 
+          resizable: true
+        };
+    }, []);
+
     return (
         <Modal
             title='구매처 검색'
@@ -176,7 +186,7 @@ const VendorList = props => {
             </Row>
             <div>
                 <div className='ag-theme-alpine' style={{ height: 200, width: '100%' }}>
-                    <AgGridReact
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         suppressDragLeaveHidesColumns={true}
                         className='marginTop-10'
                         columnDefs={columnDefs()}
@@ -184,7 +194,6 @@ const VendorList = props => {
                         ensureDomOrder={true}
                         enableCellTextSelection={true}
                         onRowClicked={onSearchSelectedValue}
-                        defaultColDef={{ editable: false, flex: 1, minWidth: 100, resizable: true }}
                         rowSelection={'single'}
                         onGridReady={onGridReady}></AgGridReact>
                 </div>

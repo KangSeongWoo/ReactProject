@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import SunEditor, { buttonList } from 'suneditor-react'
 import 'suneditor/dist/css/suneditor.min.css' // Import Sun Editor's CSS File
@@ -47,6 +47,7 @@ const TestEditor = () => {
         const formData = new FormData()
         formData.append('imageGb', '03')
         formData.append('file', file)
+        formData.append('userId', userId)
 
         const config = { headers: { 'Content-Type': 'multipart/form-data' } }
 

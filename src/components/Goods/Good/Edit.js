@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import * as Constans from '../../../utils/Constans'
@@ -21,7 +21,7 @@ import {
     Card,
     Typography,
     Table,
-    Radio
+    Radio,
 } from 'antd'
 import '/src/style/custom.css'
 import * as moment from 'moment'
@@ -33,9 +33,10 @@ import 'suneditor/dist/css/suneditor.min.css' // Import Sun Editor's CSS File
 import plugins from 'suneditor/src/plugins'
 import { ko } from 'suneditor/src/lang'
 import OptionList from './OptionList'
-import * as Common from '../../../utils/Common.js'
 import queryStirng from 'query-string'
+import * as Common from '../../../utils/Common.js'
 
+const { TextArea } = Input
 const { Option } = Select
 const { RangePicker } = DatePicker
 const { TabPane } = Tabs
@@ -66,6 +67,8 @@ const Edit = props => {
     const [isPurchaseVendorVisible, setIsPurchaseVendorVisible] = useState(false)
     const [previewVisible, setPreviewVisible] = useState(false)
     const [categories, setCategories] = useState([])
+    const [description, setDescription] = useState('')
+
     const [state, setState] = useState({
         assortId: '',
         optionGbNm1: '',
@@ -147,19 +150,78 @@ const Edit = props => {
         categoryLabel: ''
     })
 
+    const tempSuppiers = [
+        { label: ' 공급사1', value: '0001' },
+        { label: ' 공급사2', value: '0002' },
+        { label: ' 공급사3', value: '0003' },
+        { label: ' 공급사4', value: '0004' },
+    ]
+    
     const columns = [
+        {
+            title: '공급사추가',
+            dataIndex: 'addSupplier',
+            key: 'addSupplier',
+            render: (index, target) => (
+                <Icon type="plus" onClick={() => {
+                    let index = state.itemList.findIndex(arr => arr.itemId === target.itemId);
+                    
+                    let tempList = state.itemList;
+                    
+                    let tempTarget = {...target};
+                    
+                    tempTarget.seq = tempTarget.seq + 1 
+                    
+                    tempList.splice(index, 0, tempTarget)
+                    
+                    setState({
+                        ...state,
+                        itemList :tempList
+                    })
+                    
+                }} />
+            )
+        },
         { title: '옵션1', dataIndex: 'value1', key: 'value1' },
         { title: '옵션2', dataIndex: 'value2', key: 'value2' },
         { title: '옵션3', dataIndex: 'value3', key: 'value3' },
         {
+            title: '공급사',
+            dataIndex: 'supplierId',
+            key: 'supplierId',
+            render: (index, target) => (
+                <Select
+                    style={{ width: '100%' }}
+                    onChange={v => {
+                        let tempList = state.itemList
+
+                        tempList.forEach(item => {
+                            if (item.itemId === target.itemId && item.seq === target.seq) {
+                                item.supplierId = v
+                            }
+                        })
+
+                        setState({
+                            ...state,
+                            itemList: tempList
+                        })
+                    }}
+                    value={Common.trim(state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0]).supplierId}>
+                    {tempSuppiers.map(item => (
+                        <Option key={item.value}>{item.label}</Option>
+                    ))}
+                </Select> 
+            )
+        },
+        {
             title: '옵션추가금액',
-            dataIndex: 'addPrice',
-            key: 'addPrice',
+            dataIndex: 'salePrice',
+            key: 'salePrice',
             render: (index, target) => {
                 return (
                     <Input
                         style={{ width: '100%' }}
-                        value={state.itemList.filter(item => item.itemId === target.itemId)[0].addPrice}
+                        value={Common.trim(state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0]).salePrice}
                         onChange={e => {
                             let _pattern = /^(\d{1,10}([.]\d{0,2})?)?$/
                             if (!_pattern.test(e.target.value)) {
@@ -169,8 +231,40 @@ const Edit = props => {
                             let tempList = state.itemList
 
                             tempList.forEach(item => {
-                                if (item.itemId === target.itemId) {
-                                    item.addPrice = e.target.value
+                                if (item.itemId === target.itemId && item.seq === target.seq) {
+                                    item.salePrice = e.target.value
+                                }
+                            })
+
+                            setState({
+                                ...state,
+                                itemList: tempList
+                            })
+                        }}
+                    />
+                )
+            }
+        },
+        {
+            title: '재고수량',
+            dataIndex: 'stockCnt',
+            key: 'stockCnt',
+            render: (index, target) => {
+                return (
+                    <Input
+                        style={{ width: '100%' }}
+                        value={Common.trim(state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0]).stockCnt}
+                        onChange={e => {
+                            let _pattern = /^(\d{1,10}([.]\d{0,2})?)?$/
+                            if (!_pattern.test(e.target.value)) {
+                                return false
+                            }
+
+                            let tempList = state.itemList
+
+                            tempList.forEach(item => {
+                                if (item.itemId === target.itemId && item.seq === target.seq) {
+                                    item.stockCnt = e.target.value
                                 }
                             })
 
@@ -185,8 +279,8 @@ const Edit = props => {
         },
         {
             title: '품절구분',
-            dataIndex: 'shortageYn',
-            key: 'shortageYn',
+            dataIndex: 'saleYn',
+            key: 'saleYn',
             render: (index, target) => {
                 return (
                     <Select
@@ -195,8 +289,8 @@ const Edit = props => {
                             let tempList = state.itemList
 
                             tempList.forEach(item => {
-                                if (item.itemId === target.itemId) {
-                                    item.shortageYn = v
+                                if (item.itemId === target.itemId && item.seq === target.seq) {
+                                    item.saleYn = v
                                 }
                             })
 
@@ -205,7 +299,7 @@ const Edit = props => {
                                 itemList: tempList
                             })
                         }}
-                        value={state.itemList.filter(item => item.itemId === target.itemId)[0].shortageYn}>
+                        value={Common.trim(state.itemList.filter(item => item.itemId === target.itemId && item.seq === target.seq)[0]).saleYn}>
                         {Constans.SHORTAGEYN.map(item => (
                             <Option key={item.value}>{item.label}</Option>
                         ))}
@@ -221,7 +315,7 @@ const Edit = props => {
                 return (
                     <Button
                         onClick={() => {
-                            removeOptionData(record.itemId)
+                            removeOptionData(record.itemId, record.seq)
                         }}>
                         삭제
                     </Button>
@@ -232,6 +326,8 @@ const Edit = props => {
 
     // 화면 진입시
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -242,11 +338,11 @@ const Edit = props => {
         })
     }, [description])
 
-    // 옵션으로 선택된 Row 삭제
-    const removeOptionData = target => {
+   // 옵션으로 선택된 Row 삭제
+    const removeOptionData = (itemId, seq) => {
         setState({
             ...state,
-            itemList: state.itemList.filter(rows => rows.itemId !== target)
+            itemList: state.itemList.filter(rows => !(rows.itemId === itemId && rows.seq === seq))
         })
     }
 
@@ -318,6 +414,24 @@ const Edit = props => {
                 let optionGbNm2 = optionGbNm.length > 1 ? optionGbNm[1] : ''
                 let optionGbNm3 = optionGbNm.length > 2 ? optionGbNm[2] : ''
 
+                let tempItemList = []
+                
+                for (let i = 0; i < item.items.length; i++){
+                    let tempArr = item.items[i];
+                    if (tempArr.itemSupplier != undefined) {
+                        for (let k = 0; k < tempArr.itemSupplier.length; k++){
+                            tempItemList.push({
+                                ...tempArr,
+                                ...tempArr.itemSupplier[k]
+                            })
+                        }
+                    } else {
+                        tempItemList.push({
+                            ...tempArr
+                        })
+                    }
+                }
+                
                 setState({
                     ...state,
                     categoryLabel: Common.trim(makeCategoryLabel(item.categoryValue, categories, 0, '')),
@@ -343,7 +457,7 @@ const Edit = props => {
                     optionList1: Common.trim(optionList1),
                     optionList2: Common.trim(optionList2),
                     optionList3: Common.trim(optionList3),
-                    itemList: Common.trim(item.items),
+                    itemList: Common.trim(tempItemList),
                     optionUseYn: Common.trim(item.optionUseYn),
                     deliPrice: Common.trim(item.deliPrice),
                     description: description != null ? description : [],
@@ -667,7 +781,8 @@ const Edit = props => {
             items: Common.trim(items),
             uploadMainImage: uploadMainImage,
             uploadAddImage: uploadAddImage,
-            vendorId: Common.trim(state.vendorId)
+            vendorId: Common.trim(state.vendorId),
+            userId : Common.trim(state.userId)
         }
 
         console.log(JSON.stringify(goodsData))
@@ -867,8 +982,10 @@ const Edit = props => {
                                 obj.seq3 = Common.trim(optionList3[o3].seq)
                                 obj.value3 = Common.trim(optionList3[o3].value)
                                 obj.status3 = Common.trim(optionList3[o3].status)
-                                obj.shortageYn = '01'
-                                obj.addPrice = ''
+                                obj.supplierId = '0001'
+                                obj.stockCnt = 0
+                                obj.saleYn = '01'
+                                obj.salePrice = ''
                                 obj.status = 'i'
 
                                 list.push(obj)
@@ -884,8 +1001,10 @@ const Edit = props => {
                             obj.seq2 = Common.trim(optionList2[o2].seq)
                             obj.value2 = Common.trim(optionList2[o2].value)
                             obj.status2 = Common.trim(optionList2[o2].status)
-                            obj.shortageYn = '01'
-                            obj.addPrice = ''
+                            obj.supplierId = '0001'
+                            obj.stockCnt = 0
+                            obj.saleYn = '01'
+                            obj.salePrice = ''
                             obj.status = 'i'
 
                             list.push(obj)
@@ -904,8 +1023,10 @@ const Edit = props => {
                             obj.seq3 = Common.trim(optionList3[o3].seq)
                             obj.value3 = Common.trim(optionList3[o3].value)
                             obj.status3 = Common.trim(optionList3[o3].status)
-                            obj.shortageYn = '01'
-                            obj.addPrice = ''
+                            obj.supplierId = '0001'
+                            obj.stockCnt = 0
+                            obj.saleYn = '01'
+                            obj.salePrice = ''
                             obj.status = 'i'
 
                             list.push(obj)
@@ -918,8 +1039,10 @@ const Edit = props => {
                         obj.seq1 = Common.trim(optionList1[o1].seq)
                         obj.value1 = Common.trim(optionList1[o1].value)
                         obj.status1 = Common.trim(optionList1[o1].status)
-                        obj.shortageYn = '01'
-                        obj.addPrice = ''
+                        obj.supplierId = '0001'
+                        obj.stockCnt = 0
+                        obj.saleYn = '01'
+                        obj.salePrice = ''
                         obj.status = 'i'
 
                         list.push(obj)
@@ -946,6 +1069,7 @@ const Edit = props => {
         const formData = new FormData()
         formData.append('imageGb', '03')
         formData.append('file', file)
+        formData.append('userId', userId)
 
         const config = { headers: { 'Content-Type': 'multipart/form-data' } }
 
@@ -1418,6 +1542,7 @@ const Edit = props => {
                                                     }
                                                     fmData.append('imageGb', '01')
                                                     fmData.append('file', file)
+                                                    fmData.append('userId', userId)
                                                     Https.postUploadImage(fmData, config)
                                                         .then(res => {
                                                             //     onSuccess(file);
@@ -1487,6 +1612,7 @@ const Edit = props => {
                                                     }
                                                     fmData.append('imageGb', '02')
                                                     fmData.append('file', file)
+                                                    fmData.append('userId', userId)
                                                     Https.postUploadImage(fmData, config)
                                                         .then(res => {
                                                             //     onSuccess(file);

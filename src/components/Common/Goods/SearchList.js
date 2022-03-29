@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component , useMemo } from 'react'
 
 import { Layout } from 'antd'
 
@@ -7,7 +7,7 @@ import { Input, DatePicker, Select, Button, AutoComplete, Spin } from 'antd'
 import '../../../style/custom.css'
 import * as moment from 'moment'
 
-
+import { withRouter } from 'react-router-dom'
 
 import Https from '../../../api/http'
 
@@ -41,6 +41,7 @@ class SearchList extends Component {
         shortageYn: '01',
         regDtEndOpen: false,
         rowData: [],
+        height:0,
         columnDefs: [
             {
                 headerName: '품목',
@@ -96,6 +97,26 @@ class SearchList extends Component {
             resizable: true
         },
         rowSelection: 'single'
+    }
+
+    componentDidMount() {
+        this.setState({
+            height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100
+        })
+        window.addEventListener('resize', this.resizeEvent)
+    }
+
+    componentWillUnmount() {
+        this.setState({
+            height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100
+        })
+        window.removeEventListener('resize', this.resizeEvent)
+    }
+
+    resizeEvent = () => {
+        this.setState({
+            height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelector('.notice-condition').clientHeight - 100
+        })
     }
 
     handleInputChange = event => {
@@ -218,6 +239,12 @@ class SearchList extends Component {
         this.setState({ RegDtBeginOpen: open })
     }
 
+    defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+        };
+    }, []);
+
     render() {
         const { assortId, assortNm, rowData, regDtBegin, regDtEnd, shortageYn, regDtEndOpen } = this.state
 
@@ -227,94 +254,96 @@ class SearchList extends Component {
         return (
             <Layout>
                 <Spin spinning={this.state.loading} size='large'>
-                    <div className='modal-condition'>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>상품코드</td>
-                                    <td>
-                                        <Input
-                                            name='assortId'
-                                            value={assortId}
-                                            onChange={this.handleInputChange}></Input>
-                                    </td>
-                                    <td>상품명</td>
-                                    <td>
-                                        <Input
-                                            name='assortNm'
-                                            value={assortNm}
-                                            onChange={this.handleInputChange}></Input>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>생성일</td>
-                                    <td>
-                                        <DatePicker
-                                            disabledDate={this.disabledRegDtBegin}
-                                            showTime
-                                            format='YYYY-MM-DD HH:mm:ss'
-                                            // defaultValue={moment(today, 'YYYY-MM-DD HH:mm:ss')}
+                    <div className='notice-wrapper'>
+                        <div className='notice-condition'>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>상품코드</td>
+                                        <td>
+                                            <Input
+                                                name='assortId'
+                                                value={assortId}
+                                                onChange={this.handleInputChange}></Input>
+                                        </td>
+                                        <td>상품명</td>
+                                        <td>
+                                            <Input
+                                                name='assortNm'
+                                                value={assortNm}
+                                                onChange={this.handleInputChange}></Input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>생성일</td>
+                                        <td>
+                                            <DatePicker
+                                                disabledDate={this.disabledRegDtBegin}
+                                                showTime
+                                                format='YYYY-MM-DD HH:mm:ss'
+                                                // defaultValue={moment(today, 'YYYY-MM-DD HH:mm:ss')}
 
-                                            value={moment(
-                                                moment(regDtBegin).format('YYYY-MM-DD HH:mm:ss'),
-                                                'YYYY-MM-DD HH:mm:ss'
-                                            )}
-                                            placeholder='Start'
-                                            onChange={this.handleRegDtBeginChange}
-                                            onOpenChange={this.handleRegDtBeginOpenChange}
-                                        />
-                                        {' ~ '}
+                                                value={moment(
+                                                    moment(regDtBegin).format('YYYY-MM-DD HH:mm:ss'),
+                                                    'YYYY-MM-DD HH:mm:ss'
+                                                )}
+                                                placeholder='Start'
+                                                onChange={this.handleRegDtBeginChange}
+                                                onOpenChange={this.handleRegDtBeginOpenChange}
+                                            />
+                                            {' ~ '}
 
-                                        <DatePicker
-                                            disabledDate={this.disabledRegDtEnd}
-                                            showTime
-                                            format='YYYY-MM-DD HH:mm:ss'
-                                            value={moment(
-                                                moment(regDtEnd).format('YYYY-MM-DD HH:mm:ss'),
-                                                'YYYY-MM-DD HH:mm:ss'
-                                            )}
-                                            placeholder='End'
-                                            onChange={this.handleRegDtEndChange}
-                                            open={regDtEndOpen}
-                                            onOpenChange={this.handleRegDtEndOpenChange}
-                                        />
-                                    </td>
-                                    <td>진행상태</td>
-                                    <td>
-                                        <Select
-                                            style={{ width: '100%' }}
-                                            onChange={v => {
-                                                this.onValueChange('shortageYn', v)
-                                            }}
-                                            value={shortageYn}>
-                                            {Constans.SHORTAGEYN.map(item => (
-                                                <Option key={item.value}>{item.label}</Option>
-                                            ))}
-                                        </Select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan='4'>
-                                        <Button
-                                            onClick={e => {
-                                                this.getSearch(regDtBegin, regDtEnd, shortageYn)
-                                            }}>
-                                            조회
-                                        </Button>
+                                            <DatePicker
+                                                disabledDate={this.disabledRegDtEnd}
+                                                showTime
+                                                format='YYYY-MM-DD HH:mm:ss'
+                                                value={moment(
+                                                    moment(regDtEnd).format('YYYY-MM-DD HH:mm:ss'),
+                                                    'YYYY-MM-DD HH:mm:ss'
+                                                )}
+                                                placeholder='End'
+                                                onChange={this.handleRegDtEndChange}
+                                                open={regDtEndOpen}
+                                                onOpenChange={this.handleRegDtEndOpenChange}
+                                            />
+                                        </td>
+                                        <td>진행상태</td>
+                                        <td>
+                                            <Select
+                                                style={{ width: '100%' }}
+                                                onChange={v => {
+                                                    this.onValueChange('shortageYn', v)
+                                                }}
+                                                value={shortageYn}>
+                                                {Constans.SHORTAGEYN.map(item => (
+                                                    <Option key={item.value}>{item.label}</Option>
+                                                ))}
+                                            </Select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan='4'>
+                                            <Button
+                                                onClick={e => {
+                                                    this.getSearch(regDtBegin, regDtEnd, shortageYn)
+                                                }}>
+                                                조회
+                                            </Button>
 
-                                        <Button
-                                            onClick={e => {
-                                                this.showGoodsSearCh()
-                                            }}>
-                                            팝업
-                                        </Button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                            <Button
+                                                onClick={e => {
+                                                    this.showGoodsSearCh()
+                                                }}>
+                                                팝업
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <div>
-                            <div className='ag-theme-alpine' style={{ height: 200, width: '100%' }}>
-                                <AgGridReact
+                            <div className='ag-theme-alpine' style={{ height: this.state.height, width: '100%' }}>
+                                <AgGridReact defaultColDef={this.defaultColDef} multiSortKey={'ctrl'}
                                     suppressDragLeaveHidesColumns={true}
                                     ref='gridRef'
                                     columnDefs={this.state.columnDefs}
@@ -334,4 +363,4 @@ class SearchList extends Component {
 }
 
 //export default Create
-export default SearchList
+export default withRouter(SearchList)

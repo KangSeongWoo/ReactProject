@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback, useEffect } from 'react'
+import React, { useState, useLayoutEffect, useCallback, useEffect , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
 import { Row, Col, Button, Typography, DatePicker, Modal, Select, Divider, Input } from 'antd'
@@ -54,6 +54,7 @@ const PurchaseSearchM = props => {
 
     // 화면 상태에 관련 한 state
     const [state, setState] = useState({
+        height : 400,
         loading: false,
         rowData: []
     })
@@ -157,76 +158,79 @@ const PurchaseSearchM = props => {
     }, [isModalVisible])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
 
-        /// Authentication setup ///
-        qz.security.setCertificatePromise(function(resolve, reject) {
-            resolve(
-                '-----BEGIN CERTIFICATE-----\n' +
-                    'MIIEvjCCAqigAwIBAgIHcHJlLTM3ODALBgkqhkiG9w0BAQUwgZgxCzAJBgNVBAYT\n' +
-                    'AlVTMQswCQYDVQQIDAJOWTEbMBkGA1UECgwSUVogSW5kdXN0cmllcywgTExDMRsw\n' +
-                    'GQYDVQQLDBJRWiBJbmR1c3RyaWVzLCBMTEMxGTAXBgNVBAMMEHF6aW5kdXN0cmll\n' +
-                    'cy5jb20xJzAlBgkqhkiG9w0BCQEWGHN1cHBvcnRAcXppbmR1c3RyaWVzLmNvbTAe\n' +
-                    'Fw0yMTAxMTkwNTAwMDBaFw0yMjAxMjAwNTAwMDBaMIGGMQswCQYDVQQGDAJrcjEO\n' +
-                    'MAwGA1UECAwFc2VvdWwxDjAMBgNVBAcMBXNlb3VsMREwDwYDVQQKDAhDREYgQnJv\n' +
-                    'czERMA8GA1UECwwIQ0RGIEJyb3MxETAPBgNVBAMMCENERiBCcm9zMR4wHAYJKoZI\n' +
-                    'hvcNAQkBDA9yamI4MEB0cmRzdC5jb20wggEgMAsGCSqGSIb3DQEBAQOCAQ8AMIIB\n' +
-                    'CgKCAQEA2Hql4SKVCgVUxF8fpOC2s2WpvU9GWqMI3OV7QaJ2POnvQHuFedEx2gxW\n' +
-                    'WDW+bmiPAzlVuzWRAJFLQytWpYveAGnOCYKof8RnYtFR4SRuzpq/yszEackAZ1AO\n' +
-                    'deX2J1TM+eNlmp9cn89CiJ/mcQ6ErdBu4pgmMipK5TtVZHqtCWXwhLnMk9+ewpaP\n' +
-                    'iMdc0rMKoyMCT3ceSpB1uM8fakp8a5M957mjReNLT0qZjU860NhZ6M+P0xLXAbqY\n' +
-                    '165xZR/b5PkkSFU804gh/xFwspAsIPHfBN08NxMifkNw8V8CrLuSdoblyQtBMKhr\n' +
-                    '8k1Nnls+YONChEw9f1gZEPi3EA7p8wIDAQABoyMwITAfBgNVHSMEGDAWgBSQplC3\n' +
-                    'hNS56l/yBYQTeEXoqXVUXDALBgkqhkiG9w0BAQUDggIBAKZsFnbx7dtY9HH1hBl1\n' +
-                    'Z/t6zJ0JLUR0qhfGvsTN8GObQhzMbUWYOVu51y1r9hlY6NLq0fv7/I9DXmE5ngJk\n' +
-                    'N+qwoBryb8G0T/h4W/Ii9BmCwZ3T8JttWOlTupSTBvYO0ETlnXmzhnBB4AADmYsW\n' +
-                    '04ZnsfdssTPE9xvjJ8rOIvQgyKySiNrN6baPKmqBODwtqDCvbH9FZDHr+ssMpoVo\n' +
-                    'QuRhrWF9cqsOCQNgW5RoIkBUw+lPeqQE6aZKnOsMsE+uoTvoxwn731kJ8b/g3PWF\n' +
-                    'GhnulmQ33r5PK2+FVPTtLKqnBWuYN7seaVn9o8goasbyvraSIZTX7WD1Wp8HBIsZ\n' +
-                    'UAAl+wQM/iJ73W93/w5c5OKjK8H2akpfRJj+dYVz/A/wNuIWmaZ1HAIItkD1HUm4\n' +
-                    'g/iXBuhCkrfiFHYqOdh9wugcFdiTmUErlkEjFkpMe+OcRchB0CHECDWIVv2U+3As\n' +
-                    'sqOY4KDpAXZh1STF+ChRY5pIeNDz7nTZZfnCIIcl3by75LOZrim6u4z82Io6H9S7\n' +
-                    'qPppU56cRJced4D9p1arv/gEcAaeMdsyprWnW6VIyJg3X2/WLtpn0PDeU1zHKlMq\n' +
-                    'dZwEzllghmxYGhu/rj1hNMqm579QBuVLwPvkqSdah2riha/ifEf8f83CBouNcIli\n' +
-                    '2UmEu54gVRusYQyr4K0TbuLX\n' +
-                    '-----END CERTIFICATE-----\n' +
-                    '--START INTERMEDIATE CERT--\n' +
-                    '-----BEGIN CERTIFICATE-----\n' +
-                    'MIIFEjCCA/qgAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwgawxCzAJBgNVBAYTAlVT\n' +
-                    'MQswCQYDVQQIDAJOWTESMBAGA1UEBwwJQ2FuYXN0b3RhMRswGQYDVQQKDBJRWiBJ\n' +
-                    'bmR1c3RyaWVzLCBMTEMxGzAZBgNVBAsMElFaIEluZHVzdHJpZXMsIExMQzEZMBcG\n' +
-                    'A1UEAwwQcXppbmR1c3RyaWVzLmNvbTEnMCUGCSqGSIb3DQEJARYYc3VwcG9ydEBx\n' +
-                    'emluZHVzdHJpZXMuY29tMB4XDTE1MDMwMjAwNTAxOFoXDTM1MDMwMjAwNTAxOFow\n' +
-                    'gZgxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJOWTEbMBkGA1UECgwSUVogSW5kdXN0\n' +
-                    'cmllcywgTExDMRswGQYDVQQLDBJRWiBJbmR1c3RyaWVzLCBMTEMxGTAXBgNVBAMM\n' +
-                    'EHF6aW5kdXN0cmllcy5jb20xJzAlBgkqhkiG9w0BCQEWGHN1cHBvcnRAcXppbmR1\n' +
-                    'c3RyaWVzLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANTDgNLU\n' +
-                    'iohl/rQoZ2bTMHVEk1mA020LYhgfWjO0+GsLlbg5SvWVFWkv4ZgffuVRXLHrwz1H\n' +
-                    'YpMyo+Zh8ksJF9ssJWCwQGO5ciM6dmoryyB0VZHGY1blewdMuxieXP7Kr6XD3GRM\n' +
-                    'GAhEwTxjUzI3ksuRunX4IcnRXKYkg5pjs4nLEhXtIZWDLiXPUsyUAEq1U1qdL1AH\n' +
-                    'EtdK/L3zLATnhPB6ZiM+HzNG4aAPynSA38fpeeZ4R0tINMpFThwNgGUsxYKsP9kh\n' +
-                    '0gxGl8YHL6ZzC7BC8FXIB/0Wteng0+XLAVto56Pyxt7BdxtNVuVNNXgkCi9tMqVX\n' +
-                    'xOk3oIvODDt0UoQUZ/umUuoMuOLekYUpZVk4utCqXXlB4mVfS5/zWB6nVxFX8Io1\n' +
-                    '9FOiDLTwZVtBmzmeikzb6o1QLp9F2TAvlf8+DIGDOo0DpPQUtOUyLPCh5hBaDGFE\n' +
-                    'ZhE56qPCBiQIc4T2klWX/80C5NZnd/tJNxjyUyk7bjdDzhzT10CGRAsqxAnsjvMD\n' +
-                    '2KcMf3oXN4PNgyfpbfq2ipxJ1u777Gpbzyf0xoKwH9FYigmqfRH2N2pEdiYawKrX\n' +
-                    '6pyXzGM4cvQ5X1Yxf2x/+xdTLdVaLnZgwrdqwFYmDejGAldXlYDl3jbBHVM1v+uY\n' +
-                    '5ItGTjk+3vLrxmvGy5XFVG+8fF/xaVfo5TW5AgMBAAGjUDBOMB0GA1UdDgQWBBSQ\n' +
-                    'plC3hNS56l/yBYQTeEXoqXVUXDAfBgNVHSMEGDAWgBQDRcZNwPqOqQvagw9BpW0S\n' +
-                    'BkOpXjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAJIO8SiNr9jpLQ\n' +
-                    'eUsFUmbueoxyI5L+P5eV92ceVOJ2tAlBA13vzF1NWlpSlrMmQcVUE/K4D01qtr0k\n' +
-                    'gDs6LUHvj2XXLpyEogitbBgipkQpwCTJVfC9bWYBwEotC7Y8mVjjEV7uXAT71GKT\n' +
-                    'x8XlB9maf+BTZGgyoulA5pTYJ++7s/xX9gzSWCa+eXGcjguBtYYXaAjjAqFGRAvu\n' +
-                    'pz1yrDWcA6H94HeErJKUXBakS0Jm/V33JDuVXY+aZ8EQi2kV82aZbNdXll/R6iGw\n' +
-                    '2ur4rDErnHsiphBgZB71C5FD4cdfSONTsYxmPmyUb5T+KLUouxZ9B0Wh28ucc1Lp\n' +
-                    'rbO7BnjW\n' +
-                    '-----END CERTIFICATE-----\n'
-            )
-        })
+        // QZ-Tray 관련 인증 소스 - 사용시 해장 주석 풀어야함
+        // qz.security.setCertificatePromise(function(resolve, reject) {
+        //     resolve(
+        //         '-----BEGIN CERTIFICATE-----\n' +
+        //             'MIIEvjCCAqigAwIBAgIHcHJlLTM3ODALBgkqhkiG9w0BAQUwgZgxCzAJBgNVBAYT\n' +
+        //             'AlVTMQswCQYDVQQIDAJOWTEbMBkGA1UECgwSUVogSW5kdXN0cmllcywgTExDMRsw\n' +
+        //             'GQYDVQQLDBJRWiBJbmR1c3RyaWVzLCBMTEMxGTAXBgNVBAMMEHF6aW5kdXN0cmll\n' +
+        //             'cy5jb20xJzAlBgkqhkiG9w0BCQEWGHN1cHBvcnRAcXppbmR1c3RyaWVzLmNvbTAe\n' +
+        //             'Fw0yMTAxMTkwNTAwMDBaFw0yMjAxMjAwNTAwMDBaMIGGMQswCQYDVQQGDAJrcjEO\n' +
+        //             'MAwGA1UECAwFc2VvdWwxDjAMBgNVBAcMBXNlb3VsMREwDwYDVQQKDAhDREYgQnJv\n' +
+        //             'czERMA8GA1UECwwIQ0RGIEJyb3MxETAPBgNVBAMMCENERiBCcm9zMR4wHAYJKoZI\n' +
+        //             'hvcNAQkBDA9yamI4MEB0cmRzdC5jb20wggEgMAsGCSqGSIb3DQEBAQOCAQ8AMIIB\n' +
+        //             'CgKCAQEA2Hql4SKVCgVUxF8fpOC2s2WpvU9GWqMI3OV7QaJ2POnvQHuFedEx2gxW\n' +
+        //             'WDW+bmiPAzlVuzWRAJFLQytWpYveAGnOCYKof8RnYtFR4SRuzpq/yszEackAZ1AO\n' +
+        //             'deX2J1TM+eNlmp9cn89CiJ/mcQ6ErdBu4pgmMipK5TtVZHqtCWXwhLnMk9+ewpaP\n' +
+        //             'iMdc0rMKoyMCT3ceSpB1uM8fakp8a5M957mjReNLT0qZjU860NhZ6M+P0xLXAbqY\n' +
+        //             '165xZR/b5PkkSFU804gh/xFwspAsIPHfBN08NxMifkNw8V8CrLuSdoblyQtBMKhr\n' +
+        //             '8k1Nnls+YONChEw9f1gZEPi3EA7p8wIDAQABoyMwITAfBgNVHSMEGDAWgBSQplC3\n' +
+        //             'hNS56l/yBYQTeEXoqXVUXDALBgkqhkiG9w0BAQUDggIBAKZsFnbx7dtY9HH1hBl1\n' +
+        //             'Z/t6zJ0JLUR0qhfGvsTN8GObQhzMbUWYOVu51y1r9hlY6NLq0fv7/I9DXmE5ngJk\n' +
+        //             'N+qwoBryb8G0T/h4W/Ii9BmCwZ3T8JttWOlTupSTBvYO0ETlnXmzhnBB4AADmYsW\n' +
+        //             '04ZnsfdssTPE9xvjJ8rOIvQgyKySiNrN6baPKmqBODwtqDCvbH9FZDHr+ssMpoVo\n' +
+        //             'QuRhrWF9cqsOCQNgW5RoIkBUw+lPeqQE6aZKnOsMsE+uoTvoxwn731kJ8b/g3PWF\n' +
+        //             'GhnulmQ33r5PK2+FVPTtLKqnBWuYN7seaVn9o8goasbyvraSIZTX7WD1Wp8HBIsZ\n' +
+        //             'UAAl+wQM/iJ73W93/w5c5OKjK8H2akpfRJj+dYVz/A/wNuIWmaZ1HAIItkD1HUm4\n' +
+        //             'g/iXBuhCkrfiFHYqOdh9wugcFdiTmUErlkEjFkpMe+OcRchB0CHECDWIVv2U+3As\n' +
+        //             'sqOY4KDpAXZh1STF+ChRY5pIeNDz7nTZZfnCIIcl3by75LOZrim6u4z82Io6H9S7\n' +
+        //             'qPppU56cRJced4D9p1arv/gEcAaeMdsyprWnW6VIyJg3X2/WLtpn0PDeU1zHKlMq\n' +
+        //             'dZwEzllghmxYGhu/rj1hNMqm579QBuVLwPvkqSdah2riha/ifEf8f83CBouNcIli\n' +
+        //             '2UmEu54gVRusYQyr4K0TbuLX\n' +
+        //             '-----END CERTIFICATE-----\n' +
+        //             '--START INTERMEDIATE CERT--\n' +
+        //             '-----BEGIN CERTIFICATE-----\n' +
+        //             'MIIFEjCCA/qgAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwgawxCzAJBgNVBAYTAlVT\n' +
+        //             'MQswCQYDVQQIDAJOWTESMBAGA1UEBwwJQ2FuYXN0b3RhMRswGQYDVQQKDBJRWiBJ\n' +
+        //             'bmR1c3RyaWVzLCBMTEMxGzAZBgNVBAsMElFaIEluZHVzdHJpZXMsIExMQzEZMBcG\n' +
+        //             'A1UEAwwQcXppbmR1c3RyaWVzLmNvbTEnMCUGCSqGSIb3DQEJARYYc3VwcG9ydEBx\n' +
+        //             'emluZHVzdHJpZXMuY29tMB4XDTE1MDMwMjAwNTAxOFoXDTM1MDMwMjAwNTAxOFow\n' +
+        //             'gZgxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJOWTEbMBkGA1UECgwSUVogSW5kdXN0\n' +
+        //             'cmllcywgTExDMRswGQYDVQQLDBJRWiBJbmR1c3RyaWVzLCBMTEMxGTAXBgNVBAMM\n' +
+        //             'EHF6aW5kdXN0cmllcy5jb20xJzAlBgkqhkiG9w0BCQEWGHN1cHBvcnRAcXppbmR1\n' +
+        //             'c3RyaWVzLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANTDgNLU\n' +
+        //             'iohl/rQoZ2bTMHVEk1mA020LYhgfWjO0+GsLlbg5SvWVFWkv4ZgffuVRXLHrwz1H\n' +
+        //             'YpMyo+Zh8ksJF9ssJWCwQGO5ciM6dmoryyB0VZHGY1blewdMuxieXP7Kr6XD3GRM\n' +
+        //             'GAhEwTxjUzI3ksuRunX4IcnRXKYkg5pjs4nLEhXtIZWDLiXPUsyUAEq1U1qdL1AH\n' +
+        //             'EtdK/L3zLATnhPB6ZiM+HzNG4aAPynSA38fpeeZ4R0tINMpFThwNgGUsxYKsP9kh\n' +
+        //             '0gxGl8YHL6ZzC7BC8FXIB/0Wteng0+XLAVto56Pyxt7BdxtNVuVNNXgkCi9tMqVX\n' +
+        //             'xOk3oIvODDt0UoQUZ/umUuoMuOLekYUpZVk4utCqXXlB4mVfS5/zWB6nVxFX8Io1\n' +
+        //             '9FOiDLTwZVtBmzmeikzb6o1QLp9F2TAvlf8+DIGDOo0DpPQUtOUyLPCh5hBaDGFE\n' +
+        //             'ZhE56qPCBiQIc4T2klWX/80C5NZnd/tJNxjyUyk7bjdDzhzT10CGRAsqxAnsjvMD\n' +
+        //             '2KcMf3oXN4PNgyfpbfq2ipxJ1u777Gpbzyf0xoKwH9FYigmqfRH2N2pEdiYawKrX\n' +
+        //             '6pyXzGM4cvQ5X1Yxf2x/+xdTLdVaLnZgwrdqwFYmDejGAldXlYDl3jbBHVM1v+uY\n' +
+        //             '5ItGTjk+3vLrxmvGy5XFVG+8fF/xaVfo5TW5AgMBAAGjUDBOMB0GA1UdDgQWBBSQ\n' +
+        //             'plC3hNS56l/yBYQTeEXoqXVUXDAfBgNVHSMEGDAWgBQDRcZNwPqOqQvagw9BpW0S\n' +
+        //             'BkOpXjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAJIO8SiNr9jpLQ\n' +
+        //             'eUsFUmbueoxyI5L+P5eV92ceVOJ2tAlBA13vzF1NWlpSlrMmQcVUE/K4D01qtr0k\n' +
+        //             'gDs6LUHvj2XXLpyEogitbBgipkQpwCTJVfC9bWYBwEotC7Y8mVjjEV7uXAT71GKT\n' +
+        //             'x8XlB9maf+BTZGgyoulA5pTYJ++7s/xX9gzSWCa+eXGcjguBtYYXaAjjAqFGRAvu\n' +
+        //             'pz1yrDWcA6H94HeErJKUXBakS0Jm/V33JDuVXY+aZ8EQi2kV82aZbNdXll/R6iGw\n' +
+        //             '2ur4rDErnHsiphBgZB71C5FD4cdfSONTsYxmPmyUb5T+KLUouxZ9B0Wh28ucc1Lp\n' +
+        //             'rbO7BnjW\n' +
+        //             '-----END CERTIFICATE-----\n'
+        //     )
+        // })
 
-        qz.websocket.connect().then(function() {
-            console.log('Connected!')
-        })
+        // qz.websocket.connect().then(function() {
+        //     console.log('Connected!')
+        // })
+        // QZ-Tray 관련 인증 소스 - 사용시 해장 주석 풀어야함
     }, [])
 
     // 화면초기화
@@ -415,13 +419,16 @@ const PurchaseSearchM = props => {
             { cellNm: 'D1', value: '수취인 이름' },
             { cellNm: 'E1', value: '수취인 전화번호' },
             { cellNm: 'F1', value: '수취인 핸드폰 번호' },
-            { cellNm: 'G1', value: '수취인 우편번호' },
-            { cellNm: 'H1', value: '수취인 전체주소' },
-            { cellNm: 'I1', value: '주문시 남기는 글' },
-            { cellNm: 'J1', value: '상품명' },
-            { cellNm: 'K1', value: '상품수량' },
-            { cellNm: 'L1', value: '원산지' },
-            { cellNm: 'M1', value: '사진' }
+            { cellNm: 'G1', value: '수취인 전체주소' },
+            { cellNm: 'H1', value: '주문시 남기는 글' },
+            { cellNm: 'I1', value: '상품명' },
+            { cellNm: 'J1', value: '모델번호' },
+            { cellNm: 'K1', value: '옵션1' },
+            { cellNm: 'L1', value: '옵션2' },
+            { cellNm: 'M1', value: '옵션3' },
+            { cellNm: 'N1', value: '상품수량' },
+            { cellNm: 'O1', value: '원산지' },
+            { cellNm: 'P1', value: '사진' }
         ]
 
         const workbook = new ExcelJS.Workbook()
@@ -435,13 +442,16 @@ const PurchaseSearchM = props => {
         worksheet.getColumn(4).width = 10
         worksheet.getColumn(5).width = 14
         worksheet.getColumn(6).width = 16
-        worksheet.getColumn(7).width = 14
-        worksheet.getColumn(8).width = 36
-        worksheet.getColumn(9).width = 30
-        worksheet.getColumn(10).width = 36
-        worksheet.getColumn(11).width = 8
-        worksheet.getColumn(12).width = 8
-        worksheet.getColumn(13).width = 21
+        worksheet.getColumn(7).width = 36
+        worksheet.getColumn(8).width = 30
+        worksheet.getColumn(9).width = 36
+        worksheet.getColumn(10).width = 10
+        worksheet.getColumn(11).width = 10
+        worksheet.getColumn(12).width = 10
+        worksheet.getColumn(13).width = 10
+        worksheet.getColumn(14).width = 8
+        worksheet.getColumn(15).width = 8
+        worksheet.getColumn(16).width = 21
 
         let depositList = []
         let response = null
@@ -456,31 +466,45 @@ const PurchaseSearchM = props => {
             depositList.push({ cellNm: 'D' + (index + 2), value: row2.receiverNm })
             depositList.push({ cellNm: 'E' + (index + 2), value: row2.receiverTel })
             depositList.push({ cellNm: 'F' + (index + 2), value: row2.receiverHp })
-            depositList.push({ cellNm: 'G' + (index + 2), value: row2.receiverZonecode })
-            depositList.push({ cellNm: 'H' + (index + 2), value: row2.receiverAddr1 + row2.receiverAddr2 })
-            depositList.push({ cellNm: 'I' + (index + 2), value: row2.orderMemo })
-            depositList.push({ cellNm: 'J' + (index + 2), value: row2.assortNm })
-            depositList.push({ cellNm: 'K' + (index + 2), value: row2.purchaseQty })
-            depositList.push({ cellNm: 'L' + (index + 2), value: row2.origin })
+            depositList.push({ cellNm: 'G' + (index + 2), value: row2.receiverAddr1 + row2.receiverAddr2 })
+            depositList.push({ cellNm: 'H' + (index + 2), value: row2.orderMemo })
+            depositList.push({ cellNm: 'I' + (index + 2), value: row2.assortNm })
+            depositList.push({ cellNm: 'J' + (index + 2), value: row2.modelNo })
+            depositList.push({ cellNm: 'K' + (index + 2), value: row2.optionNm1 })
+            depositList.push({ cellNm: 'L' + (index + 2), value: row2.optionNm2 })
+            depositList.push({ cellNm: 'M' + (index + 2), value: row2.optionNm3 })
+            depositList.push({ cellNm: 'N' + (index + 2), value: row2.purchaseQty })
+            depositList.push({ cellNm: 'O' + (index + 2), value: row2.origin })
 
             worksheet.getRow(index + 2).height = 90
+        }
 
-            let data = {
-                url: row2.imgServerUrl + row2.imagePath //이미지 주소
-            }
+        let imageData = [];
 
-            response = await axios.post(process.env.REACT_APP_API_URL + '/file/godoImage', data)
+        for (let index = 0; index < tempList.length; index++) {
+            let row2 = tempList[index]
 
-            if (response.data != '') {
+            imageData.push(row2.imgServerUrl + row2.imagePath)
+        }
+
+        console.log('imageData : ' + imageData);
+
+        let params = {};
+        params.urls = imageData
+
+        response = await axios.post(process.env.REACT_APP_API_URL + '/file/godoImages', params)
+
+        for (let index = 0; index < response.data.images.length; index++) {
+            if (response.data.images[index] != '') {
                 signImage = workbook.addImage({
-                    base64: response.data,
+                    base64: response.data.images[index],
                     extension: 'jpeg'
                 })
-                worksheet.addImage(signImage, 'M' + (index + 2) + ':M' + (index + 2))
+                worksheet.addImage(signImage, 'P' + (index + 2) + ':P' + (index + 2))
             }
         }
 
-        Common.setProps(worksheet, 'A2:' + 'M' + Common.getCellNum(2, tempList.length), 'alignment', {
+        Common.setProps(worksheet, 'A2:' + 'P' + Common.getCellNum(2, tempList.length), 'alignment', {
             vertical: 'middle',
             horizontal: 'center'
         })
@@ -630,6 +654,13 @@ const PurchaseSearchM = props => {
         gridApi.deselectAll()
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <>
             <Modal
@@ -640,6 +671,8 @@ const PurchaseSearchM = props => {
                 onCancel={handleCancel}
                 width={'70%'}
                 footer={[<></>]}>
+                           <div className='notice-wrapper'>
+                <div className='notice-condition'>
                 <Row type='flex' justify='end' gutter={[16, 8]}>
                     <Col style={{ width: '150px' }}>
                         <Button type='primary' className='fullWidth' onClick={printData} ghost>
@@ -744,13 +777,12 @@ const PurchaseSearchM = props => {
                         />
                     </Col>
                 </Row>
-
+                </div>
                 <Row className='marginTop-10'>
-                    <div className='ag-theme-alpine' style={{ height: 400, width: '100%' }}>
-                        <AgGridReact
+                    <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                        <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                             enableCellTextSelection={true}
                             rowData={state.rowData}
-                            defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                             suppressRowClickSelection={true}
                             suppressDragLeaveHidesColumns={true}
                             columnDefs={columnDefs()}
@@ -759,6 +791,7 @@ const PurchaseSearchM = props => {
                             onGridReady={onGridReady}></AgGridReact>
                     </div>
                 </Row>
+                </div>
             </Modal>
         </>
     )

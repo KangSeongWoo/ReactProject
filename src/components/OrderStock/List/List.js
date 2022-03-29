@@ -39,7 +39,9 @@ class List extends Component {
             { field: 'brand', headerName: '제조사', editable: true, suppressMenu: true },
             { field: 'modelNo', headerName: '모델번호', editable: true, suppressMenu: true },
             { field: 'assortNm', headerName: '상품명', editable: true, suppressMenu: true },
-            { field: 'optionInfo', headerName: '옵션', editable: true, suppressMenu: true },
+            { field: 'optionNm1', headerName: '옵션1', editable: true, suppressMenu: true },
+            { field: 'optionNm2', headerName: '옵션2', editable: true, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: true, suppressMenu: true },
             { field: 'textOptionInfo', headerName: '텍스트옵션', editable: true, suppressMenu: true },
             { field: 'qty', headerName: '수량', editable: true, suppressMenu: true },
             { field: 'unitAmt', headerName: '매입가', editable: true, suppressMenu: true },
@@ -103,6 +105,7 @@ class List extends Component {
             rowHeight: 50
         },
         defaultColDef: {
+            sortable : true,
             resizable: true,
             flex: 1,
             Width: 150,
@@ -578,6 +581,7 @@ class List extends Component {
                                 ensureDomOrder={true}
                                 enableCellTextSelection={true}
                                 defaultColDef={this.state.defaultColDef}
+                                multiSortKey={'ctrl'}
                                 rowSelection={'single'}
                                 suppressRowClickSelection={false}
                                 onCellValueChanged={this.onCellValueChanged.bind(this)}

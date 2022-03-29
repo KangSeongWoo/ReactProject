@@ -43,14 +43,14 @@ th {
 }
 
 .notice-condition {
-    padding-top: 8px;
+    /* padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 12px;
     padding-right: 12px;
 
     border: 1px solid #dbdbdb;
     width: 100%;
-    background-color: white;
+    background-color: white; */
 }
 
 .notice-content {

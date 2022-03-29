@@ -1,4 +1,5 @@
 import axios from 'axios'
+import * as Common from '../utils/Common'
 
 const baseUrl = process.env.REACT_APP_API_URL
 
@@ -10,6 +11,8 @@ const instance = axios.create({
 
 instance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 
+//instance.defaults.withCredentials = true;
+
 instance.interceptors.request.use(
     config => {
         requestUrl.pop()
@@ -17,6 +20,16 @@ instance.interceptors.request.use(
             console.log('request error')
             return Promise.reject('duplicateRequest')
         } else {
+            if(config.data != undefined){
+                if(config.data.userId == '' || config.data.userId == null || config.data.userId == undefined){
+                    if(localStorage.user != undefined && localStorage.user != null && localStorage.user == ''){
+                        config.data.userId = Common.trim(JSON.parse(localStorage.user).id)
+                    }else {
+                        config.data.userId = '';
+                    }
+                    //let userInfo = await Https.getCurrentUser()
+                }
+            }
             requestUrl.push(config.url)
             console.log('request')
             const token = localStorage.getItem('token')

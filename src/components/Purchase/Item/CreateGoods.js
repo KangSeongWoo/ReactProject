@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useEffect, useCallback , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import { Layout, Input, Select, Row, Col, Button, DatePicker, Spin, message, Typography, Divider } from 'antd'
@@ -24,6 +24,7 @@ const CreateGoods = props => {
     const [ownerList, setOwnerList] = useState([])
     const [storageList, setStorageList] = useState([])
     const [isModalVisible, setIsModalVisible] = useState(false)
+    const [selectedRows, setSelectedRows] = useState(0);
     const [state, setState] = useState({
         purchaseDt: moment(),
         vendorId: '',
@@ -102,6 +103,8 @@ const CreateGoods = props => {
 
     // 화면 진입시 랜더링 하기 전에
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
     }, [])
 
@@ -239,7 +242,7 @@ const CreateGoods = props => {
                     assortId: Common.trim(node.data.assortId),
                     itemId: Common.trim(node.data.itemId),
                     purchaseQty: parseInt(Common.trim(node.data.purchaseQty)),
-                    purchaseUnitAmt: parseFloat(Common.trim(node.data.purchaseUnitAmt)),
+                    purchaseUnitAmt: parseFloat(Common.trim(node.data.purchasePrice)),
                     itemGrade: '11',
                     purchaseStatus: '01'
                 }
@@ -353,15 +356,27 @@ const CreateGoods = props => {
             )
             .focus()
     }
+    
+    const onSelectionChanged = () => {
+        var selectedRows = gridApi.getSelectedRows()
+
+        setSelectedRows(selectedRows.length);
+    }
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          editable: false, flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
 
     return (
         <Layout>
             <div className='notice-header'>
                 <CustomBreadcrumb arr={['발주', '발주등록(상품)']}></CustomBreadcrumb>
             </div>
-
-            <div className=''>
-                <div className='' style={{ marginTop: '6px' }}>
+            <div className='notice-wrapper'>
+                <div className='notice-condition' style={{ marginTop: '6px' }}>
                     <Row type='flex' justify='end' gutter={[16, 16]} align='bottom'>
                         <Col style={{ width: '150px' }}>
                             <Button type='dashed' className='fullWidth' onClick={showGoodsSearchList}>
@@ -461,8 +476,9 @@ const CreateGoods = props => {
                         </Col>
                     </Row>
                     <div style={{ marginTop: '14px' }}>
-                        <div className='ag-theme-alpine' style={{ height: 650, width: '100%' }}>
-                            <AgGridReact
+                        <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                        <div className='ag-theme-alpine marginTop-10' style={{ height: props.height, width: '100%' }}>
+                            <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                                 columnDefs={columnDefs()}
                                 suppressDragLeaveHidesColumns={true}
                                 onCellClicked={onCellClicked}
@@ -470,9 +486,9 @@ const CreateGoods = props => {
                                 ensureDomOrder={true}
                                 singleClickEdit={true}
                                 suppressRowClickSelection={true}
+                                onSelectionChanged={onSelectionChanged}
                                 onFirstDataRendered={onFirstDataRendered}
                                 enableCellTextSelection={true}
-                                defaultColDef={{ editable: false, flex: 1, minWidth: 100, resizable: true }}
                                 rowSelection={'multiple'}
                                 onGridReady={onGridReady}></AgGridReact>
                         </div>
@@ -482,6 +498,7 @@ const CreateGoods = props => {
 
             <div>
                 <GoodsSearchList
+                    rowSelection={'multiple'}
                     isModalVisible={isModalVisible}
                     setIsModalVisible={setIsModalVisible}
                     backState={state}

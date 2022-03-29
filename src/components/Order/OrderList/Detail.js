@@ -1,9 +1,9 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react'
+import React, { useState, useLayoutEffect, useEffect , useMemo } from 'react'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
 import queryStirng from 'query-string'
 import { withRouter } from 'react-router-dom'
 import moment from 'moment'
-import { Row, Col, Input, Typography, Spin, Divider, Button } from 'antd'
+import { Row, Col, Input, Typography, Divider, Button,Modal } from 'antd'
 import { AgGridReact } from 'ag-grid-react'
 import Https from '../../../api/http'
 import * as GridKeyValue from '../../../utils/GridKeyValue'
@@ -17,6 +17,8 @@ import * as Common from '../../../utils/Common.js'
 const { Text } = Typography
 
 const Detail = props => {
+    const [detailInfo, setDetailInfo] = useState({})
+    
     let params = queryStirng.parse(props.params)
 
     console.log('params : ' + JSON.stringify(params))
@@ -30,9 +32,23 @@ const Detail = props => {
         orderId: params.orderId
     })
 
+    const LinkCellRenderer = row => {
+        return (
+            <span>
+                <a
+                    onClick={() => {
+                        row.data.detailView = true
+                        searchDetailInfo(row.data)
+                    }}>
+                    {row.data.channelOrderNo}
+                </a>
+            </span>
+        )
+    }
+    
     const columnDefs = () => {
         return [
-            { field: 'channelOrderNo', headerName: '체널주문번호', editable: false, suppressMenu: true },
+            { field: 'channelOrderNo', headerName: '체널주문번호', editable: false, suppressMenu: true, cellRenderer: 'LinkCellRenderer' },
             { field: 'orderKey', headerName: '상품주문번호', editable: false, suppressMenu: true },
             { field: 'goodsKey', headerName: '상품번호', editable: false, suppressMenu: true },
             {
@@ -105,9 +121,17 @@ const Detail = props => {
             { field: 'scmType', headerName: '공급사구분', editable: false, suppressMenu: true }
         ]
     }
+    
+    const searchDetailInfo = async record => {
+        setDetailInfo({
+            ...record
+        })
+    }
 
     // 화면 그려지기 전에 호출
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         getOrderStatusList()
     }, [])
 
@@ -136,6 +160,8 @@ const Detail = props => {
             console.log(JSON.stringify(res))
 
             setGetData({
+                ...getData,
+                height: window.innerHeight - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - document.querySelectorAll('.notice-condition')[0].clientHeight - document.querySelectorAll('.notice-condition')[1].clientHeight - 100,
                 ...res.data.data
             })
         } catch (error) {
@@ -182,9 +208,74 @@ const Detail = props => {
         window.open('https://gdadmin.trdst.com/order/order_view.php?orderNo=' + getData.channelOrderNo).focus()
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true 
+        };
+    }, []);
+
     return (
-        <div className='notice-wrapper'>
+        <>
+            <Modal
+                title='배송정보'
+                visible={detailInfo != undefined ? detailInfo.detailView : false}
+                onOk={() => {
+                    setDetailInfo({
+                        ...detailInfo,
+                        detailView: false
+                    })
+                }}
+                onCancel={() => {
+                    setDetailInfo({
+                        ...detailInfo,
+                        detailView: false
+                    })
+                }}
+                footer={[<></>]}>
+                <Text className='font-15 NanumGothic-Regular' strong>
+                    제작시작일
+                </Text>
+                <span>
+                    <p>{detailInfo.purchaseCompleteDt}</p>
+                </span>
+                <Text className='font-15 NanumGothic-Regular' strong>
+                    제작완료일
+                </Text>
+                <span>
+                    <p>{detailInfo.makeCompleteDt}</p>
+                </span>
+                <Text className='font-15 NanumGothic-Regular' strong>
+                    선적완료일
+                </Text>
+                <span>
+                    <p>{detailInfo.shipmentDt}</p>
+                </span>
+                <Text className='font-15 NanumGothic-Regular' strong>
+                    국내입항일
+                </Text>
+                <span>
+                    <p>{detailInfo.estiArrvDt}</p>
+                </span>
+                {/* <Text className='font-15 NanumGothic-Regular' strong>
+                    회수입고일
+                </Text>
+                <span>
+                    <p>
+                        {detailInfo.orderKey}
+                    </p>
+                </span> */}
+                <Text className='font-15 NanumGothic-Regular' strong>
+                    취소완료일
+                </Text>
+                <span>
+                    <p>{detailInfo.cancelDt}</p>
+                </span>
+            </Modal>
+            
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['주문', '주문내역']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={[16, 8]}>
                 <Col style={{ width: '180px' }}>
                     <Button type='primary' className='fullWidth' onClick={goToGodomall} ghost>
@@ -309,21 +400,22 @@ const Detail = props => {
                     </Row>
                 </Col>
             </Row>
+            </div>
             <Row>
-                <div className='ag-theme-alpine' style={{ height: 300, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         rowData={getData.orders}
                         suppressDragLeaveHidesColumns={true}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         // rowSelection={'multiple'}
                         columnDefs={columnDefs()}
                         onFirstDataRendered={onFirstDataRendered}
-                        // colResizeDefault={'shift'}
+                        frameworkComponents={{ LinkCellRenderer: LinkCellRenderer }}
                         onGridReady={onGridReady}
                         onCellClicked={onCellClicked}></AgGridReact>
                 </div>
             </Row>
+                <div className='notice-condition'>
             <Divider orientation='left' className='DoHyeon-Regular' style={{ margin: '10px 0' }}>
                 수령자
             </Divider>
@@ -512,7 +604,9 @@ const Detail = props => {
                     </Row>
                 </Col>
             </Row>
-        </div>
+            </div>
+            </div>
+            </>
     )
 }
 

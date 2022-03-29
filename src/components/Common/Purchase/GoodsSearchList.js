@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useEffect, useCallback , useMemo } from 'react'
 import { withRouter } from 'react-router-dom'
 import { Layout } from 'antd'
 import { Input, Row, Col, Modal, Button, Select, Typography } from 'antd'
@@ -13,7 +13,7 @@ const { Option } = Select
 const { Text } = Typography
 
 const GoodsSearchList = props => {
-    const { isModalVisible, setIsModalVisible, backState, setBackState } = props
+    const { isModalVisible, setIsModalVisible, backState, setBackState, rowSelection } = props
 
     const [gridApi, setGridApi] = useState(null)
     const [ownerList, setOwnerList] = useState([])
@@ -21,6 +21,7 @@ const GoodsSearchList = props => {
     const [gridColumnApi, setGridColumnApi] = useState(null)
     const [isBrandVisible, setIsBrandVisible] = useState(false) // 브랜드 팝업 state
     const [isPurchaseVendorVisible, setIsPurchaseVendorVisible] = useState(false) // 구매처 팝업 state
+    const [selectedRows, setSelectedRows] = useState(0);
     const [state, setState] = useState({
         ownerList: '',
         vendorId: '',
@@ -32,18 +33,20 @@ const GoodsSearchList = props => {
         categoryLabel: '',
         rowData: [],
         assortId: '',
-        assortNm: ''
+        assortNm: '',
+        channelGoodsNo:'',
     })
 
     const columnDefs = () => {
         return [
             {
                 headerName: '상품코드',
-                field: 'assortId',
-                headerCheckboxSelection: true,
+                field: 'goodsKey',
+                headerCheckboxSelection: rowSelection == 'single' ? false :  true,
                 headerCheckboxSelectionFilteredOnly: true,
                 checkboxSelection: true
             },
+            { headerName : '고도몰상품코드', field:'channelGoodsNo'},
             { headerName: '브랜드', field: 'brandNm' },
             { headerName: '모델번호', field: 'modelNo' },
             {
@@ -180,7 +183,14 @@ const GoodsSearchList = props => {
     }
 
     const getSearch = () => {
-        const { vendorId, brandId, assortId, assortNm, categoryValue } = state
+        const { vendorId, brandId, assortId, assortNm, categoryValue,channelGoodsNo } = state
+
+        if(vendorId == '' && assortId == '' && assortNm == '' && categoryValue == '' && channelGoodsNo == ''){
+            if (brandId == '') {
+                alert('브랜드를 선택해 주세요.')
+                return false
+            }
+        }
 
         let params = {}
 
@@ -188,13 +198,8 @@ const GoodsSearchList = props => {
         params['assortId'] = Common.trim(assortId)
         params['assortNm'] = Common.trim(assortNm)
         params['categoryValue'] = Common.trim(categoryValue)
-
-        if (brandId != '') {
-            params['brandId'] = Common.trim(brandId)
-        } else {
-            alert('브랜드를 선택해 주세요.')
-            return false
-        }
+        params['channelGoodsNo'] = Common.trim(channelGoodsNo)
+        params['brandId'] = Common.trim(brandId)
 
         const p = new URLSearchParams(params)
 
@@ -202,6 +207,12 @@ const GoodsSearchList = props => {
         return Https.getGoodsDetailList(p)
             .then(response => {
                 console.log(response)
+
+                for(let i = 0; i < response.data.data.length; i++){
+                    if(response.data.data[i].rackNo == '' || response.data.data[i].rackNo == null || response.data.data[i].rackNo == undefined){
+                        response.data.data[i].rackNo = '999999'
+                    }
+                }
 
                 setState({
                     ...state,
@@ -312,6 +323,22 @@ const GoodsSearchList = props => {
             )
             .focus()
     }
+    
+    const onSelectionChanged = () => {
+        var selectedRows = gridApi.getSelectedRows()
+        
+        setSelectedRows(selectedRows.length);
+    } 
+
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          ditable: false, 
+          flex: 1, 
+          minWidth: 100, 
+          resizable: true
+        };
+    }, []);
 
     return (
         <Layout>
@@ -330,69 +357,86 @@ const GoodsSearchList = props => {
                         확인
                     </Button>
                 ]}>
-                <div className='modal-condition'>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                브랜드
-                            </Text>
-                        </Col>
-                        <Col span={8}>
-                            <Select
-                                name='brandId'
-                                showSearch
-                                placeholder='브랜드 선택'
-                                className='fullWidth'
-                                onChange={handleSelectChange}
-                                value={state.brandId != '' ? state.brandId : undefined}
-                                filterOption={(input, option) =>
-                                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }>
-                                {brandList.map(item => (
-                                    <Option key={item.codeId}>{item.codeNm}</Option>
-                                ))}
-                            </Select>
-                        </Col>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                상품코드
-                            </Text>
-                        </Col>
-                        <Col span={8}>
-                            <Input
-                                name='assortId'
-                                placeholder='상품코드'
-                                value={state.assortId != '' ? state.assortId : undefined}
-                                onChange={handleInputChange}
-                            />
-                        </Col>
-                    </Row>
-                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
-                        <Col span={4}>
-                            <Text className='font-15 NanumGothic-Regular' strong>
-                                상품명
-                            </Text>
-                        </Col>
-                        <Col span={12}>
-                            <Input
-                                name='assortNm'
-                                placeholder='상품명'
-                                value={state.assortNm != '' ? state.assortNm : undefined}
-                                onChange={handleInputChange}
-                            />
-                        </Col>
-                    </Row>
-                    <Row className='marginTop-10'>
-                        <Col span={24}>
-                            <Button type='primary' className='fullWidth searchPop' onClick={getSearch}>
-                                조회
-                            </Button>
-                        </Col>
-                    </Row>
-
-                    <div>
-                        <div className='ag-theme-alpine' style={{ height: 550, width: '100%', paddingTop: '5px' }}>
-                            <AgGridReact
+                <div className='notice-wrapper'>
+                    <div className='notice-condition'>
+                        <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                            <Col span={4}>
+                                <Text className='font-15 NanumGothic-Regular' strong>
+                                    브랜드
+                                </Text>
+                            </Col>
+                            <Col span={8}>
+                                <Select
+                                    name='brandId'
+                                    showSearch
+                                    placeholder='브랜드 선택'
+                                    className='fullWidth'
+                                    onChange={handleSelectChange}
+                                    value={state.brandId != '' ? state.brandId : undefined}
+                                    filterOption={(input, option) =>
+                                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }>
+                                    {brandList.map(item => (
+                                        <Option key={item.codeId}>{item.codeNm}</Option>
+                                    ))}
+                                </Select>
+                            </Col>
+                            <Col span={4}>
+                                <Text className='font-15 NanumGothic-Regular' strong>
+                                    상품코드
+                                </Text>
+                            </Col>
+                            <Col span={8}>
+                                <Input
+                                    name='assortId'
+                                    placeholder='상품코드'
+                                    value={state.assortId != '' ? state.assortId : undefined}
+                                    onChange={handleInputChange}
+                                />
+                            </Col>
+                        </Row>
+                        <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                            <Col span={4}>
+                                <Text className='font-15 NanumGothic-Regular' strong>
+                                    상품명
+                                </Text>
+                            </Col>
+                            <Col span={8}>
+                                <Input
+                                    name='assortNm'
+                                    placeholder='상품명'
+                                    value={state.assortNm != '' ? state.assortNm : undefined}
+                                    onChange={handleInputChange}
+                                />
+                            </Col>
+                            <Col span={4}>
+                                <Text className='font-15 NanumGothic-Regular' strong>
+                                    고도몰상품코드
+                                </Text>
+                            </Col>
+                            <Col span={8}>
+                                <Input
+                                    name='channelGoodsNo'
+                                    placeholder='고도몰상품코드'
+                                    value={state.channelGoodsNo != '' ? state.channelGoodsNo : undefined}
+                                    onChange={handleInputChange}
+                                />
+                            </Col>
+                        </Row>
+                        <Row className='marginTop-10'>
+                            <Col span={24}>
+                                <Button type='primary' className='fullWidth searchPop' onClick={getSearch}>
+                                    조회
+                                </Button>
+                            </Col>
+                        </Row>
+                    </div>
+                    <div className='marginTop-10'>
+                        <Text className='font-15 NanumGothic-Regular'>총 선택 : {selectedRows}개</Text>
+                        <div className='ag-theme-alpine' style={{ height: 400, width: '100%', paddingTop: '5px' }}>
+                            <AgGridReact 
+                                defaultColDef={defaultColDef} 
+                                multiSortKey={'ctrl'}
                                 suppressDragLeaveHidesColumns={true}
                                 className='marginTop-10'
                                 columnDefs={columnDefs()}
@@ -400,15 +444,14 @@ const GoodsSearchList = props => {
                                 rowData={state.rowData}
                                 ensureDomOrder={true}
                                 suppressRowClickSelection={true}
+                                onSelectionChanged={onSelectionChanged}
                                 onFirstDataRendered={onFirstDataRendered}
                                 enableCellTextSelection={true}
-                                defaultColDef={{ editable: false, flex: 1, minWidth: 100, resizable: true }}
-                                rowSelection={'multiple'}
+                                rowSelection={rowSelection}
                                 onGridReady={onGridReady}></AgGridReact>
                         </div>
                     </div>
                 </div>
-
                 {/* <div>
                     <BrandSearch
                         isModalVisible={isBrandVisible}

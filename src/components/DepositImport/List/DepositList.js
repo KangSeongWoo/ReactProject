@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useLayoutEffect, useCallback , useMemo,useEffect } from 'react'
 import queryStirng from 'query-string'
 import { withRouter } from 'react-router-dom'
 import CustomBreadcrumb from '/src/utils/CustomBreadcrumb'
@@ -71,6 +71,7 @@ const DepositGoods = props => {
             { field: 'assortNm', headerName: '상품명', editable: false, suppressMenu: true },
             { field: 'optionNm1', headerName: '옵션1', editable: false, suppressMenu: true },
             { field: 'optionNm2', headerName: '옵션2', editable: false, suppressMenu: true },
+            { field: 'optionNm3', headerName: '옵션3', editable: false, suppressMenu: true },
             { field: 'depositQty', headerName: '수량', editable: false, suppressMenu: true },
             { field: 'extraUnitcost', headerName: '금액', editable: false, suppressMenu: true }
             // { field: 'memo', headerName: '메모', editable: false, suppressMenu: true }
@@ -84,6 +85,8 @@ const DepositGoods = props => {
     }, [])
 
     useLayoutEffect(() => {
+        window.addEventListener('resize', () => props.setHeight());
+        props.setHeight();
         setInit()
         document.addEventListener('keyup', hotkeyFunction)
     }, [])
@@ -216,9 +219,18 @@ const DepositGoods = props => {
             .focus()
     }
 
+    const defaultColDef = useMemo(() => {
+        return {
+          sortable: true,
+          flex: 1, minWidth: 100, resizable: true
+        };
+    }, []);
+
     return (
         <>
             <CustomBreadcrumb style={{ marginBottom: '0px' }} arr={['해외입고', '해외입고리스트']}></CustomBreadcrumb>
+            <div className='notice-wrapper'>
+                <div className='notice-condition'>
             <Row type='flex' justify='end' gutter={[16, 8]}>
                 <Col style={{ width: '150px' }}>
                     <Button type='primary' className='fullWidth search' onClick={getSearchList}>
@@ -298,14 +310,13 @@ const DepositGoods = props => {
                     </Row>
                 </Col>
             </Row>
-
+            </div>
             <Row className='marginTop-10'>
-                <div className='ag-theme-alpine' style={{ height: 600, width: '100%' }}>
-                    <AgGridReact
+                <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                    <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                         enableCellTextSelection={true}
                         suppressDragLeaveHidesColumns={true}
                         rowData={state.rowData}
-                        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
                         // rowSelection={'multiple'}
                         onFirstDataRendered={onFirstDataRendered}
                         columnDefs={columnDefs()}
@@ -313,6 +324,7 @@ const DepositGoods = props => {
                         onGridReady={onGridReady}></AgGridReact>
                 </div>
             </Row>
+            </div>
         </>
     )
 }

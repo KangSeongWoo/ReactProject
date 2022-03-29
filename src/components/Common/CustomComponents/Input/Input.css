@@ -1,0 +1,31 @@
+.inputField { 
+	background-color: transparent;
+	height: 27px;
+	width: 145px;
+	border: 2px solid rgba(0, 0, 0, 0.23);
+	border-radius: 7px;
+}
+
+.inputField~span{
+	background-color: white;
+	position: absolute;
+	top: 23px;
+	left: 17px;
+	z-index: -1;
+	transition: all ease-in-out 0.5s;
+}
+
+.inputField:hover {
+	border: 2px solid black;
+}
+
+.inputField:focus-visible  {
+	outline: none!important;
+	border: 2px solid #1976d2;
+}
+
+.inputField:focus ~ span {
+	top : 12px;
+	z-index: 1;
+	font-size: 5px;
+	transition: all ease-in-out 0.5s;
