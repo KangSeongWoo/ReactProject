@@ -60,7 +60,7 @@ function getBase64(file) {
     })
 }
 
-const Edit = props => {
+const EditV2 = props => {
     let params = queryStirng.parse(props.params)
 
     const [isBrandVisible, setIsBrandVisible] = useState(false)
@@ -80,7 +80,8 @@ const Edit = props => {
         optionValue1: '',
         optionValue2: '',
         optList: [],
-        assortNm: '',
+        assortDnm: '',
+        assortEnm:'',
         optionUseYn: '02',
         assortColor: '',
         categoryId: [],
@@ -116,7 +117,7 @@ const Edit = props => {
         buySupplyDiscount: '',
         buyRrpIncrement: '',
         buyExchangeRate: '',
-        sDescription: '',
+        shortDescription: '',
         saleFromDt: moment().subtract(1, 'M'),
         saleToDt: moment(),
         asWidth: '',
@@ -124,7 +125,7 @@ const Edit = props => {
         asHeight: '',
         weight: '',
         assortGb: '01',
-        content: '',
+        goodsDescription: '',
         rowSelection: 'multiple',
         rowData: [],
         previewImage: '',
@@ -147,7 +148,10 @@ const Edit = props => {
         vendorId: '',
         vendorNm: '',
         combineYn: 'n',
-        categoryLabel: ''
+        categoryLabel: '',
+        addInfos: [],
+        data1: '',
+        data2 : '',
     })
 
     const tempSuppiers = [
@@ -334,7 +338,7 @@ const Edit = props => {
     useEffect(() => {
         setState({
             ...state,
-            content: description
+            goodsDescription: description
         })
     }, [description])
 
@@ -382,7 +386,7 @@ const Edit = props => {
             itemList: []
         })
 
-        return Https.getGoodsDetail(assortId)
+        return Https.getGoodsDetailV2(assortId)
             .then(response => {
                 console.log(response)
 
@@ -396,17 +400,17 @@ const Edit = props => {
                 optionList2 = item.attributes.filter(o => o.variationGb == '02')
                 optionList3 = item.attributes.filter(o => o.variationGb == '03')
 
-                let description = item.description == null ? '' : item.description.filter(o => o.ordDetCd == '01')
+                // let description = item.description == null ? '' : item.description.filter(o => o.ordDetCd == '01')
 
-                let shortDescription = item.description == null ? '' : item.description.filter(o => o.ordDetCd == '02')
+                // let shortDescription = item.description == null ? '' : item.description.filter(o => o.ordDetCd == '02')
 
-                console.log(description)
+                // console.log(description)
 
-                let content = description == '' ? '' : description[0].memo
+                // let content = description == '' ? '' : description[0].memo
 
-                console.log(content)
+                // console.log(content)
 
-                let sDescription = shortDescription == '' ? '' : shortDescription[0].memo
+                // let sDescription = shortDescription == '' ? '' : shortDescription[0].memo
 
                 var optionGbNm = item.optionGbName.split('^|^')
 
@@ -443,7 +447,10 @@ const Edit = props => {
                     assortGb: Common.trim(item.assortGb),
                     assortId: Common.trim(item.assortId),
                     assortModel: Common.trim(item.assortModel),
-                    assortNm: Common.trim(item.assortNm),
+                    
+                    assortDnm: Common.trim(item.assortDnm),
+                    assortEnm:Common.trim(item.assortEnm),
+                    
                     assortState: Common.trim(item.assortState),
                     brandId: Common.trim(item.brandId),
                     brandNm: Common.trim(item.brandNm),
@@ -461,9 +468,8 @@ const Edit = props => {
                     optionUseYn: Common.trim(item.optionUseYn),
                     deliPrice: Common.trim(item.deliPrice),
                     description: description != null ? description : [],
-                    shortDescription: shortDescription != null ? shortDescription : [],
-                    content: Common.trim(content),
-                    sDescription: Common.trim(sDescription),
+                    goodsDescription: Common.trim(item.goodsDescription),
+                    shortDescription: Common.trim(item.shortDescription),
                     categoryValue: item.categoryValue != null ? item.categoryValue : [],
                     localPrice: Common.trim(item.localPrice),
                     localSale: Common.trim(item.localSale),
@@ -484,6 +490,7 @@ const Edit = props => {
                     optionGbNm1: Common.trim(optionGbNm1),
                     optionGbNm2: Common.trim(optionGbNm2),
                     optionGbNm3: Common.trim(optionGbNm3),
+                    addInfos: Common.trim(state.addInfos),
                     mainImageList: item.uploadMainImage != null ? item.uploadMainImage : [],
                     addImageList: item.uploadAddImage != null ? item.uploadAddImage : []
                 })
@@ -728,7 +735,10 @@ const Edit = props => {
 
         let goodsData = {
             assortId: Common.trim(state.assortId),
-            assortNm: Common.trim(state.assortNm),
+            
+            assortDnm : Common.trim(state.assortDnm),
+            assortEnm : Common.trim(state.assortEnm),
+            
             assortColor: Common.trim(state.assortColor),
             dispCategoryId: Common.trim(cv),
             brandId: Common.trim(state.brandId),
@@ -763,28 +773,29 @@ const Edit = props => {
             mdMargin: Common.trim(state.mdMargin),
             mdGoodsVatrate: Common.trim(state.mdGoodsVatrate),
             buyTax: Common.trim(state.buyTax),
-            description: [
-                {
-                    //상세
-                    seq: Common.trim(descSeq),
-                    ordDetCd: '01',
-                    textHtmlGb: '01',
-                    memo: Common.trim(state.content)
-                },
-                {
-                    //간략
-                    seq: Common.trim(shortDescSeq),
-                    ordDetCd: '02',
-                    textHtmlGb: '02',
-                    memo: Common.trim(state.sDescription)
-                }
-            ],
+            // description: [
+            //     {
+            //         //상세
+            //         seq: Common.trim(descSeq),
+            //         ordDetCd: '01',
+            //         textHtmlGb: '01',
+            //         memo: Common.trim(state.content)
+            //     },
+            //     {
+            //         //간략
+            //         seq: Common.trim(shortDescSeq),
+            //         ordDetCd: '02',
+            //         textHtmlGb: '02',
+            //         memo: Common.trim(state.sDescription)
+            //     }
+            // ],
             optionUseYn: Common.trim(optionUseYn),
             attributes: Common.trim(attributes),
             items: Common.trim(items),
             uploadMainImage: uploadMainImage,
             uploadAddImage: uploadAddImage,
             vendorId: Common.trim(state.vendorId),
+            addInfos: Common.trim(state.addInfos),
             userId : Common.trim(state.userId)
         }
 
@@ -1137,7 +1148,7 @@ const Edit = props => {
     console.log('-------------------------------------------------------------------')
     console.log(state.itemList)
 
-    const changeContent = event => {
+    const changeGoodsDescription = event => {
         setDescription(event)
     }
 
@@ -1183,8 +1194,33 @@ const Edit = props => {
     const simpleContentChange = event => {
         setState({
             ...state,
-            sDescription: event.target.value
+            shortDescription: event.target.value
         })
+    }
+    
+    const setAddInfos = () => {
+        setState({
+            ...state,
+            addInfos : [...state.addInfos, {
+                'data1': state.data1,
+                'data2': state.data2,
+            }]
+        })
+    }
+    
+    // 마스터 팝업 화면 이동
+    const masterPopup = e => {
+        e.data = [];
+        e.data.displayKd = 'POP'
+        let url = '/#/Goods/masterPopup?' + queryStirng.stringify(e.data)
+
+        window
+            .open(
+                url,
+                '상세' + new Date(),
+                'toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=no,width=1210,height=702,top=, left= '
+            )
+            .focus()
     }
 
     return (
@@ -1196,6 +1232,11 @@ const Edit = props => {
             <div className='notice-wrapper'>
                 <div className='notice-content' style={{ overflowY: 'scroll', maxHeight: '800px' }}>
                     <Row type='flex' justify='end' gutter={16}>
+                        <Col style={{ width: '150px' }}>
+                            <Button type='primary' className='fullWidth' onClick={masterPopup}>
+                                마스터 등록
+                            </Button>
+                        </Col>
                         <Col style={{ width: '150px' }}>
                             <Button type='primary' className='fullWidth' onClick={createGoods}>
                                 저장
@@ -1217,11 +1258,19 @@ const Edit = props => {
                                     </Col>
                                     <Col span={2}>
                                         <Text className='font-15 NanumGothic-Regular' strong>
-                                            상품명
+                                            제휴상품명
                                         </Text>
                                     </Col>
                                     <Col span={10}>
-                                        <Input name='assortNm' value={state.assortNm} onChange={handleInputChange} />
+                                        <Input name='assortDnm' value={state.assortDnm} onChange={handleInputChange} />
+                                    </Col>
+                                    <Col span={2}>
+                                        <Text className='font-15 NanumGothic-Regular' strong>
+                                            영문상품명
+                                        </Text>
+                                    </Col>
+                                    <Col span={10}>
+                                        <Input name='assortEnm' value={state.assortEnm} onChange={handleInputChange} />
                                     </Col>
                                     <Col span={2}>
                                         <Text className='font-15 NanumGothic-Regular' strong>
@@ -1543,6 +1592,59 @@ const Edit = props => {
                                         />
                                     </Col>
                                 </Row>
+                                <Divider />
+                                <Row gutter={[16, 8]} className='onVerticalCenter marginTop-15'>
+                                    <Col span={2}>
+                                        <Text className='font-15 NanumGothic-Regular' strong>
+                                            추가정보
+                                        </Text>
+                                    </Col>
+                                </Row>
+                                <Row gutter={[16, 8]} className='onVerticalCenter marginTop-15'>
+                                    <Col span={2}>
+                                        <Text className='font-15 NanumGothic-Regular' strong>
+                                            data1
+                                        </Text>
+                                    </Col>
+                                    <Col span={4}>
+                                        <Input
+                                            name='data1'
+                                            onChange={handleInputChange}
+                                            value={state.data1}
+                                        />
+                                    </Col>
+                                    <Col span={2}>
+                                        <Text className='font-15 NanumGothic-Regular' strong>
+                                            data2
+                                        </Text>
+                                    </Col>
+                                    <Col span={4}>
+                                        <Input
+                                            name='data2'
+                                            onChange={handleInputChange}
+                                            value={state.data2}
+                                        />
+                                    </Col>
+                                    <Col span={4}>
+                                        <Button onClick={setAddInfos}>추가</Button>
+                                    </Col>
+                                </Row>
+                                
+                                {state.addInfos.length != 0 && (
+                                    <Row gutter={[16, 8]} className='onVerticalCenter marginTop-15'>
+                                        <Table columns={[{
+                                            title: 'data1',
+                                            dataIndex: 'data1',
+                                            key: 'data1'
+                                        },
+                                        {
+                                            title: 'data2',
+                                            dataIndex: 'data2',
+                                            key: 'data2',
+                                        },]} dataSource={state.addInfos}/>
+                                    
+                                    </Row>
+                                )}
                             </TabPane>
                             <TabPane tab={`이미지설정`} key={2}>
                                 <Row gutter={[16, 8]}>
@@ -2056,8 +2158,8 @@ const Edit = props => {
                                     <Col span={20}>
                                         <TextArea
                                             onChange={simpleContentChange}
-                                            value={state.sDescription}
-                                            name='sDescription'
+                                            value={state.shortDescription}
+                                            name='shortDescription'
                                         />
                                     </Col>
                                 </Row>
@@ -2069,8 +2171,8 @@ const Edit = props => {
                                     </Col>
                                     <Col span={20}>
                                         <SunEditor
-                                            onChange={changeContent}
-                                            defaultValue={state.content}
+                                            onChange={changeGoodsDescription}
+                                            defaultValue={state.goodsDescription}
                                             onImageUploadBefore={onImageUploadBefore}
                                             setOptions={{
                                                 height: '500px',
@@ -2129,4 +2231,4 @@ const Edit = props => {
 }
 
 //export default Create
-export default withRouter(Edit)
+export default withRouter(EditV2)

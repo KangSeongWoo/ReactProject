@@ -132,4 +132,16 @@ export const menu = [
         icon: 'form',
         subs: [{ title: '검색어', key: '/Search/Search', icon: '' }]
     },
+    {
+        title: '테스트 페이지',
+        key: '/test',
+        icon: 'form',
+        subs: [
+            { title: '상품등록', key: '/Goods/addV2', icon: '' },
+            { title: '상품리스트', key: '/Goods/listV2', icon: '' },
+            { title: '발주등록(주문)', key: '/Purchase/addOrderV2', icon: '' },
+            { title: '발주진행리스트', key: '/Purchase/purchaseProcessList', icon: '' },
+            { title: '발주완료리스트', key: '/Purchase/purchaseCompleteList', icon: '' },
+        ]
+    },
 ]

@@ -70,21 +70,9 @@ class List extends Component {
             { field: 'orderDt', headerName: '주문일자', editable: true, suppressMenu: true },
             { field: 'orderMemo', headerName: '주문요청사항', editable: true, suppressMenu: true },
             { field: 'stockNo', headerName: '재고', editable: true, suppressMenu: true },
-            { field: 'purchaseNo', headerName: '구매코드', editable: true, suppressMenu: true },
+            { field: 'purchaseNo', headerName: '발주번호', editable: true, suppressMenu: true },
             { field: 'pi', headerName: 'PI', editable: true, suppressMenu: true },
-            { field: 'realAmt', headerName: '잔금', editable: true, suppressMenu: true },
-            {
-                field: 'realDeliMethod',
-                headerName: '실운송방식',
-                editable: true,
-                suppressMenu: true
-            },
-            {
-                field: 'carrier',
-                headerName: 'CARRIER',
-                editable: true,
-                suppressMenu: true
-            },
+           
             { field: 'blNo', headerName: 'B/L번호', editable: true, suppressMenu: true },
             {
                 headerName: '주문일 기준 소요기간',
@@ -444,7 +432,7 @@ class List extends Component {
                 주문일자: item.orderDt,
                 주문요청사항: item.orderMemo,
                 재고: item.stockNo,
-                '구매 코드': item.purchaseNo,
+                '발주 번호': item.purchaseNo,
                 pi: item.pi,
                 잔금: item.realAmt,
                 실운송방식: item.realDeliMethod,

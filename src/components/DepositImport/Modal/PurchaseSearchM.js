@@ -660,6 +660,13 @@ const PurchaseSearchM = props => {
           flex: 1, minWidth: 100, resizable: true
         };
     }, []);
+    
+     const onDateChange = value => {
+        setGetData({
+            ...getData,
+            startDt: value
+        })
+    }
 
     return (
         <>
@@ -679,7 +686,7 @@ const PurchaseSearchM = props => {
                             검수리스트 출력
                         </Button>
                     </Col>
-                    <Col style={{ width: '150px' }}>
+                    {/* <Col style={{ width: '150px' }}>
                         <Button type='primary' className='fullWidth' onClick={print2} ghost>
                             바코드 출력
                         </Button>
@@ -688,7 +695,7 @@ const PurchaseSearchM = props => {
                         <Button type='primary' className='fullWidth' onClick={print1} ghost>
                             물류서식지 출력
                         </Button>
-                    </Col>
+                    </Col> */}
                     <Col style={{ width: '150px' }}>
                         <Button type='primary' className='fullWidth searchPop' onClick={checkTheValue} ghost>
                             조회
@@ -723,6 +730,52 @@ const PurchaseSearchM = props => {
                             value={getData.endDt}
                         />
                     </Col>
+                    <Col span={12}>
+                        <Row gutter={16} type='flex' className='onVerticalCenter marginTop-10'>
+                            <Button
+                                type='primary'
+                                style={{ marginRight: '3px' }}
+                                size='small'
+                                onClick={() => onDateChange(moment())}>
+                                오늘
+                            </Button>
+                            <Button
+                                type='primary'
+                                style={{ marginRight: '3px' }}
+                                size='small'
+                                onClick={() => onDateChange(moment().subtract(7, 'd'))}>
+                                7일
+                            </Button>
+                            <Button
+                                type='primary'
+                                style={{ marginRight: '3px' }}
+                                size='small'
+                                onClick={() => onDateChange(moment().subtract(15, 'd'))}>
+                                15일
+                            </Button>
+                            <Button
+                                type='primary'
+                                style={{ marginRight: '3px' }}
+                                size='small'
+                                onClick={() => onDateChange(moment().subtract(1, 'M'))}>
+                                1개월
+                            </Button>
+                            <Button
+                                type='primary'
+                                style={{ marginRight: '3px' }}
+                                size='small'
+                                onClick={() => onDateChange(moment().subtract(3, 'M'))}>
+                                3개월
+                            </Button>
+                            <Button
+                                type='primary'
+                                style={{ marginRight: '3px' }}
+                                size='small'
+                                onClick={() => onDateChange(moment().subtract(1, 'Y'))}>
+                                1년
+                            </Button>
+                        </Row>
+                    </Col>        
                 </Row>
                 <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
                     <Col span={4}>
@@ -736,14 +789,14 @@ const PurchaseSearchM = props => {
                             className='fullWidth'
                             onChange={handleChangeOption}
                             value={getData.vendorId}>
-                            <Option key='00'>선택</Option>
+                            <Option key='00'>전체</Option>
                             {purchaseVendorList.map(item => (
                                 <Option key={item.value}>{item.label}</Option>
                             ))}
                         </Select>
                     </Col>
                 </Row>
-                <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                {/* <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
                     <Col span={4}>
                         <Text className='font-15 NanumGothic-Regular' strong>
                             PI 번호
@@ -759,7 +812,7 @@ const PurchaseSearchM = props => {
                             autoComplete='off'
                         />
                     </Col>
-                </Row>
+                </Row> */}
                 <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
                     <Col span={4}>
                         <Text className='font-15 NanumGothic-Regular' strong>

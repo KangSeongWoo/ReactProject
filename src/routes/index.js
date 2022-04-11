@@ -54,6 +54,20 @@ const routes = [
         type: 'PurchaseItem'
     },
     {
+        path: '/Purchase/processOne/:id',
+        exact: false,
+        name: '발주진행관리(주문)',
+        component: PurchaseItem,
+        type: 'PurchaseItem'
+    },
+    {
+        path: '/Purchase/completeOne/:id',
+        exact: false,
+        name: '발주완료관리(주문)',
+        component: PurchaseItem,
+        type: 'PurchaseItem'
+    },
+    {
         path: '/DepositDomestic/:id',
         exact: false,
         name: '국내입고관리',

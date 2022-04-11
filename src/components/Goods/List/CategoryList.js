@@ -19,19 +19,51 @@ const CategoryList = props => {
     
     const [state, setState] = useState({
         selectedKeys: '',
-        title: '',
-        url : '',
+        categoryNm: '',
+        categoryId : '',
         categoryData: [
-            { title: 'root', key: '1', seq: 0, url:'' },
-            { title: '00', key: '10', seq: 0, url:''  },
-            { title: '01', key: '11', seq: 1, url:''  },
-            { title: '02', key: '12', seq: 2, url:''  },
-            { title: '001', key: '101', seq: 0, url:''  },
-            { title: '010', key: '110', seq: 0 , url:'' },
-            { title: '011', key: '111', seq: 1, url:'www.naver.com'  },
-            { title: '012', key: '112', seq: 2 , url:'' },
-            { title: '03', key: '13', seq: 3, url:''  },
-            { title: '030', key: '130', seq: 0, url:''  },
+            {
+                categoryId : "A00000000",
+                upperCategoryId : "",
+                categoryNm : "root",
+                isBottonYn : "02"
+            },
+            {
+                categoryId : "A00000001",
+                upperCategoryId : "A00000000",
+                categoryNm : "FURNITURE",
+                isBottonYn : "02"
+            },
+            {
+                categoryId : "A00000002",
+                upperCategoryId : "A00000001",
+                categoryNm : "SOFA",
+                isBottonYn : "02"
+            },
+            {
+                categoryId : "A00000003",
+                upperCategoryId : "A00000002",
+                categoryNm : "SOFA (1 seat)",
+                isBottonYn : "01"
+            },
+            {
+                categoryId : "A00000004",
+                upperCategoryId : "A00000000",
+                categoryNm : "LIGHTING",
+                isBottonYn : "02"
+            },
+            {
+                categoryId : "A00000005",
+                upperCategoryId : "A00000004",
+                categoryNm : "WALL / CEILING",
+                isBottonYn : "02"
+            },
+            {
+                categoryId : "A00000006",
+                upperCategoryId : "A00000005",
+                categoryNm : "다운 라이트",
+                isBottonYn : "01"
+            }
         ],
         rowData : [],
         menuTree : []
@@ -47,17 +79,17 @@ const CategoryList = props => {
     useEffect(() => {
         let tempList = JSON.parse(JSON.stringify(state.categoryData));
         
-        let categoryTree = makeCategoryTree(tempList, [], 0, '');
+        let categoryTree = makeCategoryTree(tempList, [], '');
         setState({
             ...state,
             categoryTree : categoryTree
         })
     },[state.categoryData])
     
-    const makeCategoryTree = (inputList,outputList,index, key) => {
+    const makeCategoryTree = (inputList,outputList, upperId) => {
         let tempList = [];
         
-        tempList = inputList.filter((row) => row.key.length === index + 1 && row.key.substr(0, index) === key);
+        tempList = inputList.filter((row) => row.upperCategoryId === upperId);
         
         if (tempList.length == 0) {
             return outputList;
@@ -67,7 +99,7 @@ const CategoryList = props => {
             if (tempList[i].children == undefined) {
                 tempList[i].children = [];
             }
-            makeCategoryTree(inputList, tempList[i].children, index + 1,tempList[i].key)
+            makeCategoryTree(inputList, tempList[i].children, tempList[i].categoryId)
             outputList.push(tempList[i]);
         }
         
@@ -75,12 +107,12 @@ const CategoryList = props => {
     }
 
     const renderCategoryItem = (item) => (
-        <TreeNode key={item.key} {...item} />
+        <TreeNode title={item.categoryNm} key={item.categoryId} dataRef={item} />
     )
 
     const renderSubCategory = (item) => {
         return (
-            <TreeNode title={item.title} key={item.key} dataRef={item}>
+            <TreeNode title={item.categoryNm} key={item.categoryId} dataRef={item}>
                 {item.children &&
                     item.children.map(item => {
                         return item.children && item.children.length > 0 ? renderSubCategory(item) : renderCategoryItem(item)
@@ -93,8 +125,8 @@ const CategoryList = props => {
         setState({
             ...state,
             selectedKeys: selectedKeys[0],
-            title: info.selectedNodes[0].props.title,
-            url : info.selectedNodes[0].props.url
+            categoryNm: info.selectedNodes[0].props.dataRef.categoryNm,
+            categoryId : info.selectedNodes[0].props.dataRef.categoryId
         })
         console.log('selected', selectedKeys, info);
     };
@@ -103,21 +135,22 @@ const CategoryList = props => {
     const addCategory = () => {
         let tempList1 = [...state.categoryData];
         
-        let tempList2 = tempList1.filter((row) => row.key.length === state.selectedKeys.length + 1 && row.key.substr(0, state.selectedKeys.length) === state.selectedKeys);
+        let tempList2 = tempList1.filter((row) => row.upperCategoryId === state.selectedKeys);
         
         if (tempList2.length === 0) {
             tempList1.push({
-                title: '새로운 카테고리',
-                key: state.selectedKeys + '0',
+                categoryNm: '새로운 카테고리',
+                categoryId: getNextCategoryId(getLastCategoryId()),
+                upperCategoryId : state.selectedKeys,
                 seq: 0
             })
         } else {
             tempList1.push({
-                title: '새로운 카테고리',
-                key: String(Number(tempList2.sort((a,b) => {return Number(b.key) - Number(a.key)})[0].key) + 1),
+                categoryNm: '새로운 카테고리',
+                categoryId: getNextCategoryId(getLastCategoryId()),
+                upperCategoryId : state.selectedKeys,
                 seq: String(Number(tempList2.sort((a,b) => {return Number(b.seq) - Number(a.seq)})[0].seq) + 1)
             })
-            
         }
         
         setState({
@@ -130,15 +163,15 @@ const CategoryList = props => {
     const removeCategory = () => {
         let tempList1 = [...state.categoryData];
         
-        let tempList2 = tempList1.filter((row) => row.key.substr(0, state.selectedKeys.length) === state.selectedKeys)
+        let tempList2 = tempList1.filter((row) => row.upperCategoryId === state.selectedKeys)
         
-        if (tempList2.length !== 1) {
+        if (tempList2.length !== 0) {
             alert("하위 카테고리가 존재 합니다. 하위 카테고리가를 삭제해 주세요")
             return false;
         } else {
             setState({
                 ...state,
-                categoryData : tempList1.filter((row) => row.key.substr(0, state.selectedKeys.length) !== state.selectedKeys)
+                categoryData : tempList1.filter((row) => row.categoryId !== state.selectedKeys)
             })
         }
     }
@@ -147,7 +180,7 @@ const CategoryList = props => {
         let tempList1 = [...state.categoryData];
         
         tempList1.forEach((row) => {
-            if (row.key === state.selectedKeys) {
+            if (row.categoryId === state.selectedKeys) {
                 row[event.target.name] = event.target.value
             }
         })
@@ -176,7 +209,7 @@ const CategoryList = props => {
         let tempList1 = [...state.categoryData];
         
         tempList1.forEach((row) => {
-            if (row.key === state.selectedKeys) {
+            if (row.categoryId === state.selectedKeys) {
                 row.items = [...state.rowData];
                 
             }
@@ -190,6 +223,18 @@ const CategoryList = props => {
             ...state,
             rowData : []
         })
+    }
+    
+    // 마지막 카테고리 번호 얻기
+    const getLastCategoryId = () => {
+        return state.categoryData.sort((a,b) => {
+            return b.categoryId.substr(1,b.categoryId.length) - a.categoryId.substr(1,a.categoryId.length)
+        })[0].categoryId
+    }
+    
+    // 다음 카테고리 번호 얻기
+    const getNextCategoryId = (target) => {
+        return target.substr(0,1) + Common.leadingZeros(Number(target.substr(1,target.length)) + 1, 8)
     }
     
     const columns = [
@@ -354,18 +399,18 @@ const CategoryList = props => {
                                 </Col>
                                 <Col span={20}>
                                     <Input
-                                        name='title'
-                                        value={state.title}
+                                        name='categoryNm'
+                                        value={state.categoryNm}
                                         onChange={handleInputChange}
                                         placeholder='categoryNm'
                                         className='fullWidth'
                                     />
                                 </Col>
                             </Row>
-                            <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
+                            {/* <Row gutter={[16, 8]} className='onVerticalCenter marginTop-10'>
                                 <Col span={4}>
                                     <Text className='font-15 NanumGothic-Regular' strong>
-                                        카테고리URL
+                                        카테고리I
                                     </Text>
                                 </Col>
                                 <Col span={20}>
@@ -377,7 +422,7 @@ const CategoryList = props => {
                                         className='fullWidth'
                                     />
                                 </Col>
-                            </Row>
+                            </Row> */}
                         </Col>
                     </Row>
                     <Row gutter={[16, 16]}>

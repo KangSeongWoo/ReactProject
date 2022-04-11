@@ -191,7 +191,7 @@ const Search = props => {
                         </Row>
                     </div>
                     <div>
-                        <div className='ag-theme-alpine' style={{ height: props.height, width: '100%' }}>
+                        <div className='ag-theme-alpine' style={{ height: 300, width: '100%' }}>
                             <AgGridReact defaultColDef={defaultColDef} multiSortKey={'ctrl'}
                                 className='marginTop-10'
                                 columnDefs={columnDefs()}

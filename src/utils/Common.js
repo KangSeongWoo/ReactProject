@@ -10,6 +10,18 @@ export const trim = object => {
     }
 }
 
+//숫자 앞에 0 채우기
+export const leadingZeros = (target, digits) => {
+    let zero = '';
+    target = target.toString();
+
+    if (target.length < digits) {
+        for (var i = 0; i < digits - target.length; i++) zero += '0';
+    }
+    
+    return zero + target;
+}
+
 //json 합치기
 export const extend = (json1, json2) => {
     const newObj = {}

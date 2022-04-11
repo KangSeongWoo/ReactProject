@@ -357,6 +357,9 @@ export const PURCHASESTATUS = [
         label: '취소',
         value: '05'
     },
+]
+
+export const INNERPURCHASESTATUS = [
     {
         label: '송금완료',
         value: 'A1'

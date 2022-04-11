@@ -30,21 +30,6 @@ const LayoutTemplate = (props) => {
         show: true,
         //height : 0
     })
-
-    // const resizeEvent = () => {
-    //     let height = window.innerHeight 
-    //     - (document.querySelector('header') != undefined ? document.querySelector('header').clientHeight : 0) 
-    //     - (document.querySelector('footer') != undefined ? document.querySelector('footer').clientHeight : 0) - 100
-
-    //     for(let i = 0; i < document.querySelectorAll('.notice-condition').length; i++){
-    //         height -= document.querySelectorAll('.notice-condition')[i].clientHeight
-    //     }
-
-    //     setState({
-    //         ...state,
-    //         height: height
-    //     })
-    // }
     
     useEffect(() => {
         //window.addEventListener('resize', resizeEvent)

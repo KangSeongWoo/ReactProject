@@ -13,7 +13,7 @@ const { Option } = Select
 const { Text } = Typography
 
 const GoodsSearchList = props => {
-    const { isModalVisible, setIsModalVisible, backState, setBackState, rowSelection } = props
+    const { isModalVisible, setIsModalVisible, backState, setBackState, rowSelection, callBackFunc } = props
 
     const [gridApi, setGridApi] = useState(null)
     const [ownerList, setOwnerList] = useState([])
@@ -275,6 +275,10 @@ const GoodsSearchList = props => {
                 ...backState,
                 rowData: [...backState.rowData, ...newList]
             })
+            
+            if (callBackFunc != undefined) {
+                callBackFunc();
+            }
         }
 
         setIsModalVisible(false)

@@ -23,9 +23,15 @@ class Https {
 
     // 상품상세 정보 호출
     getGoodsDetail = id => instance.get(baseUrl + '/goods/' + id)
+    
+    // 상품상세 정보 호출 V2
+    getGoodsDetailV2 = id => instance.get(baseUrl + '/goods/v2/items/' + id)
 
     // 상품 리스트 내역 호출(마스터 기준)
     getGoodsMasterList = param => instance.get(baseUrl + '/goods/items/master', { params: param })
+    
+    // 상품 리스트 내역 호출(마스터 기준) V2
+    getGoodsMasterListV2 = param => instance.get(baseUrl + '/goods/v2/items', { params: param })
 
     // 구매처 리스트 조회(거래처 없음 포함 / 수량 포함)
     getPurchaseVendors = () => instance.get(baseUrl + '/purchase/vendors')
@@ -67,6 +73,9 @@ class Https {
 
     // 상품 등록
     postSaveGoods = (params, config) => instance.post(baseUrl + '/goods/save', params, config)
+    
+    // 상품 등록 V2
+    postSaveGoodsV2 = (params, config) => instance.post(baseUrl + '/goods/v2/save', params, config)
 
     // 주문 리스트 조회
     getOrderList = param => instance.get(baseUrl + '/order/items', { params: param })
@@ -202,6 +211,12 @@ class Https {
     
     //상품정보 단건 변경
     postProductInfoUpdate = param => instance.get(baseUrl + '/goods/change/vendor', { params: param })
+    
+    //상품 옵션 마스터 관리
+    manageOptionMaster = (params, config) => instance.post(baseUrl + '/goods/v3/master', params, config)
+    
+    //발주건 삭제
+    removePurchaseRows = (params, config) => instance.post(baseUrl + '/purchase/cancel/', params, config)
 }
 
 export default new Https()

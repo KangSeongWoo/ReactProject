@@ -65,6 +65,7 @@ const Create = props => {
         categories: [],
         optionGbNm1: '색상',
         optionGbNm2: '',
+        optionGbNm3 : '',
         onfirmDirty: false,
         autoCompleteResult: [],
         nickName: '',
@@ -383,9 +384,11 @@ const Create = props => {
         })
 
         let goodsData = {
+            dispCategoryId: Common.trim(cv),
+            sellStaDt: Common.trim(state.saleFromDt.format('YYYY-MM-DD HH:mm:ss')),
+            sellEndDt: Common.trim(state.saleToDt.format('YYYY-MM-DD HH:mm:ss')),
             assortNm: Common.trim(state.assortNm),
             assortColor: Common.trim(state.assortColor),
-            dispCategoryId: Common.trim(cv),
             brandId: Common.trim(state.brandId),
             origin: Common.trim(state.origin),
             manufactureNm: Common.trim(state.manufactureNm),
@@ -407,8 +410,6 @@ const Create = props => {
             buySupplyDiscount: Common.trim(state.buySupplyDiscount),
             buyExchangeRate: Common.trim(state.buyExchangeRate),
             buyRrpIncrement: Common.trim(state.buyRrpIncrement),
-            sellStaDt: Common.trim(state.saleFromDt.format('YYYY-MM-DD HH:mm:ss')),
-            sellEndDt: Common.trim(state.saleToDt.format('YYYY-MM-DD HH:mm:ss')),
             asWidth: Common.trim(state.asWidth),
             asLength: Common.trim(state.asLength),
             asHeight: Common.trim(state.asHeight),
@@ -443,7 +444,38 @@ const Create = props => {
             vendorId: Common.trim(state.vendorId),
             userId : Common.trim(state.userId)
         }
-
+        
+        // let tempGoodData = {}
+        
+        // let keys = Object.keys(goodsData);
+        
+        // for (let i = 0; i < keys.length; i++){
+        //     if (keys[i] === 'description') {
+        //         if ((state.content != '' && state.content != null && state.content != undefined) || (state.sDescription != '' && state.sDescription != null && state.sDescription != undefined)) {
+        //             tempGoodData[keys[i]] = [
+        //                  {
+        //                     //상세
+        //                     seq: '',
+        //                     ordDetCd: '01',
+        //                     textHtmlGb: '01',
+        //                     memo: Common.trim(state.content)
+        //                 },
+        //                 {
+        //                     //간략
+        //                     seq: '',
+        //                     ordDetCd: '02',
+        //                     textHtmlGb: '02',
+        //                     memo: Common.trim(state.sDescription)
+        //                 }
+        //             ]
+        //         }
+        //     } else {
+        //         if (goodsData[keys[i]] != '' && goodsData[keys[i]] != null && goodsData[keys[i]] != undefined) {
+        //             tempGoodData[keys[i]] = goodsData[keys[i]]
+        //         }
+        //     }
+        // }
+        
         console.log(JSON.stringify(goodsData))
 
         const config = { headers: { 'Content-Type': 'application/json' } }

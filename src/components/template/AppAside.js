@@ -43,9 +43,14 @@ const AppAside = (props) => {
     )
 
     const renderSubMenu = ({ key, icon, title, subs }) => {
+        const flag = !(window.location.host.indexOf("13.125.17.235") != -1 || window.location.host.indexOf("terp.trdst.com") != -1 || window.location.host.indexOf("localhost:3000") != -1) && (key.indexOf("/test") != -1)
+        
         return (
             <Menu.SubMenu
                 key={key}
+                style={{
+                    display : flag && 'none'
+                }}
                 title={
                     <span>
                         {icon && <Icon type={icon} />}
