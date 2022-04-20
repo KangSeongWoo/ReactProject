@@ -2,9 +2,9 @@
 
 echo "docker prd admin-web run start"
 
-aws ecr get-login-password | docker login --username AWS --password-stdin 252464636547.dkr.ecr.ap-northeast-2.amazonaws.com/erp-front-backoffice
+aws ecr get-login-password | docker login --username AWS --password-stdin ''
 
-docker pull 252464636547.dkr.ecr.ap-northeast-2.amazonaws.com/erp-front-backoffice-dev:latest
+docker pull ''
 
 docker rm -f \
   $(docker ps -aq -f name=erp-front-backoffice)
